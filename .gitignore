@@ -4,6 +4,7 @@ model/*
 *.jpg
 *.jpeg
 *.png
+*.mp4
 *.txt
 *.csv
 *.pt
