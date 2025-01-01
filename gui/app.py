@@ -46,12 +46,21 @@ if task_type == "Create Crops":
     st.sidebar.header("Video Config")
 
     uploaded_video = st.sidebar.file_uploader("Upload a video", type=['mp4'])
-    location = st.sidebar.text_input("Location", placeholder="eg. KJ, SJ")
-    camera = st.sidebar.text_input("Camera ID", placeholder="eg. C1, C2, C3, C4")
-    time = st.sidebar.text_input("Time", placeholder="eg. 8AM, 3PM, 8PM")
+    location = st.sidebar.selectbox("Location", options=["KJ", "SJ", "Custom"])
+    if location == "Custom":
+        location = st.sidebar.text_input("Custom Location")
+
+    camera = st.sidebar.selectbox("Camera ID", options=["C1", "C2", "C3", "C4", "Custom"])
+    if camera == "Custom":
+        camera = st.sidebar.text_input("Custom Camera ID")
+
+    time = st.sidebar.selectbox("Time", options=["8AM", "11AM", "3PM", "8PM", "Custom"])
+    if time == "Custom":
+        time = st.sidebar.text_input("Custom Time")
+
     prefix = f"{location}-{camera}-{time}"
     
-    if (uploaded_video is not None) and (all(x is not "" for x in [location, camera, time])):
+    if (uploaded_video is not None) and (all(x != "" for x in [location, camera, time])):
         # st.video(uploaded_video)
 
         video_byte = uploaded_video.getvalue()
