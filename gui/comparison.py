@@ -174,6 +174,10 @@ def initialize_session_state():
         st.session_state.bnext2_disabled = False
     if "bmatch_disabled" not in st.session_state:
         st.session_state.bmatch_disabled = True
+    if "bdel1_disabled" not in st.session_state:
+        st.session_state.bdel1_disabled = False
+    if "bdel2_disabled" not in st.session_state:
+        st.session_state.bdel2_disabled = False
     # if "bsave_disabled" not in st.session_state:
     #     st.session_state.bsave_disabled = True
     # if "new_img_list1" not in st.session_state:
@@ -221,6 +225,18 @@ def next2():
 def back2():
     if len(st.session_state.image_list2) > 1:
         st.session_state.img2 -= 1
+
+def del1():
+    if len(st.session_state.image_list1) > 0:
+        current_image = st.session_state.image_list1[st.session_state.img1]
+        st.session_state.image_list1.remove(current_image)
+        st.session_state.img1 = min(st.session_state.img1, len(st.session_state.image_list1) - 1) 
+
+def del2():
+    if len(st.session_state.image_list2) > 0:
+        current_image = st.session_state.image_list2[st.session_state.img2]
+        st.session_state.image_list2.remove(current_image)
+        st.session_state.img2 = min(st.session_state.img2, len(st.session_state.image_list2) - 1) 
 
 def match():
     st.session_state.results.append({
