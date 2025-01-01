@@ -12,8 +12,9 @@ def save_file(file, output_path):
 
 def create_subfolders(base_path, folder_name):
     counter = 2
+    ori_folder_name = folder_name
     while os.path.exists(os.path.join(base_path, folder_name)):
-        folder_name = f"{folder_name}{counter}"
+        folder_name = f"{ori_folder_name}{counter}"
         counter += 1
     subfolder = os.path.join(base_path, folder_name)
     os.makedirs(subfolder)
