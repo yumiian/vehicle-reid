@@ -1,6 +1,6 @@
 from pathlib import Path
 import streamlit as st
-import os
+import pandas as pd
 
 import settings
 import helper
@@ -95,6 +95,12 @@ if task_type == "Compare Images":
         if save_result:
             st.session_state.save_result_path = st.text_input("Save path here", key="save_path", placeholder="result.txt")
             st.button("Save result", use_container_width=True, on_click=comparison.save)
+
+        show_result = st.checkbox("Show results", value=False)
+        if show_result:
+            st.session_state.is_reviewing = True
+        else:
+            st.session_state.is_reviewing = False
         
         # resume = st.checkbox("Resume", value=False)
         # if resume:
@@ -137,6 +143,11 @@ if task_type == "Compare Images":
             st.button("Match found", type="primary", use_container_width=True, disabled=st.session_state.bmatch_disabled, on_click=comparison.match)
         else:
             st.write("Done comparison! Please save your results :)")
+
+    if st.session_state.is_reviewing:
+        df = pd.DataFrame(st.session_state.results)
+        st.dataframe(df)
+        # st.session_state.edited_df = st.data_editor(df, num_rows="dynamic")
 
 ########################
 

@@ -1,5 +1,6 @@
 import os
 import cv2
+import pandas as pd
 import streamlit as st
 
 def image_listdir(path):
@@ -153,6 +154,8 @@ def initialize_session_state():
     """Initialize all session state variables if they don't exist"""
     if "is_running" not in st.session_state:
         st.session_state.is_running = False
+    if "is_reviewing" not in st.session_state:
+        st.session_state.is_reviewing = False
     
     if "img1" not in st.session_state:
         st.session_state.img1 = 0
@@ -164,6 +167,8 @@ def initialize_session_state():
         st.session_state.image_list2 = []
     if "results" not in st.session_state:
         st.session_state.results = []
+    # if "edited_df" not in st.session_state:
+    #     st.session_state.edited_df = None
     if "bback1_disabled" not in st.session_state:
         st.session_state.bback1_disabled = True
     if "bnext1_disabled" not in st.session_state:
@@ -256,6 +261,9 @@ def match():
 
 def save():
     try:
+        # convert the dataframe back to list of dictionaries
+        # edited_results = st.session_state.edited_df.to_dict(orient="records")
+        # save_results(st.session_state.save_result_path, edited_results, mode='a')
         save_results(st.session_state.save_result_path, st.session_state.results, mode='a')
         st.success(f"Result file successfully saved to {st.session_state.save_result_path}")
     except (FileNotFoundError, PermissionError):
