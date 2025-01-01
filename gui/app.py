@@ -16,7 +16,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-st.sidebar.title("Vehicle Reidentification")
+# st.sidebar.title("Vehicle Reidentification")
 
 #######################
 
@@ -33,7 +33,7 @@ helper.cleanup(video_dir)
 
 ########################
 
-st.sidebar.header("Model Config")
+# st.sidebar.header("Model Config")
 
 task_type = st.sidebar.radio("Select Task", ["Create Crops", "Compare Images", "Batch Rename", 
                                              "Dataset Split", "Model Training", "Model Testing"])
@@ -43,7 +43,7 @@ task_type = st.sidebar.radio("Select Task", ["Create Crops", "Compare Images", "
 if task_type == "Create Crops":
     confidence = float(st.sidebar.slider("Select Model Confidence", 25, 100, 70)) / 100
 
-    st.sidebar.header("Video Config")
+    # st.sidebar.header("Video Config")
 
     uploaded_video = st.sidebar.file_uploader("Upload a video", type=['mp4'])
     location = st.sidebar.selectbox("Location", options=["KJ", "SJ", "Custom"])
