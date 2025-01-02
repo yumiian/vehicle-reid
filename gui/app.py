@@ -9,6 +9,7 @@ import comparison
 import rename
 import datasplit
 import reid
+import visualization
 
 st.set_page_config(
     page_title="Vehicle Reidentification",
@@ -36,7 +37,7 @@ helper.cleanup(video_dir)
 # st.sidebar.header("Model Config")
 
 task_type = st.sidebar.radio("Select Task", ["Create Crops", "Compare Images", "Batch Rename", 
-                                             "Dataset Split", "Model Training", "Model Testing"])
+                                             "Dataset Split", "Model Training", "Model Testing", "Visualization"])
 
 ########################
 
@@ -270,3 +271,40 @@ if task_type == "Model Testing":
                 st.text(stdout + stderr)
                 # st.error(stderr)
         st.success("Done!")
+
+########################
+
+if task_type == "Visualization":
+    data_dir = st.sidebar.text_input("Dataset directory:", value="gui/datasets/reid", help="Path to the dataset root directory")
+    query_csv_path = st.sidebar.text_input("Query csv file path:", value="gui/datasets/reid/query.csv", help="query.csv file path")
+    gallery_csv_path = st.sidebar.text_input("Gallery csv file path:", value="gui/datasets/reid/gallery.csv", help="gallery.csv file path")
+    model_opts = st.sidebar.text_input("Model saved options", value="model/resnet50/opts.yaml", help="Model yaml file")
+    checkpoint = st.sidebar.text_input("Model checkpoint path", value="model/resnet50/net_59.pth", help="Model pth file")
+
+    advanced = st.sidebar.toggle("Advanced Settings")
+
+    if advanced:
+        batchsize = st.sidebar.number_input("Batch size", min_value=8, value=64, step=8)
+        input_size = st.sidebar.number_input("Image input size", min_value=128, value=224, help="Image input size for the model")
+        num_images = st.sidebar.number_input("Number of gallery images", min_value=2, value=29, help="Number of gallery images to show")
+        imgs_per_row = st.sidebar.number_input("Images per row", min_value=2, value=6)
+
+        use_saved_mat = st.sidebar.checkbox("Use cache", help="Use precomputed features from a previous test.py run: pytorch_result.mat")
+    else:
+        batchsize = 64
+        input_size = 224
+        num_images = 29
+        imgs_per_row = 6
+        use_saved_mat = False
+
+    curr_idx = st.slider("Select query index", min_value=0, max_value=100, value=0)
+
+    run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
+    if run_button:
+        with st.spinner("Running..."):
+            with st.container(border=True):
+                fig, queries_len = visualization.visualize(data_dir=data_dir, query_csv_path=query_csv_path,
+                                                        gallery_csv_path=gallery_csv_path, model_opts=model_opts,
+                                                        checkpoint=checkpoint, batchsize=batchsize, input_size=input_size, 
+                                                        num_images=num_images, imgs_per_row=imgs_per_row, use_saved_mat=use_saved_mat, curr_idx=curr_idx)
+                st.pyplot(fig)
