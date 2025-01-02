@@ -143,6 +143,8 @@ def visualize(data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint
     
     # run queries
     if use_saved_mat:
+        if not os.path.isfile("pytorch_result.mat"):
+            st.error("Cache file is missing. Try run model testing or disable \"Use cache\" from Advanced Settings.")
         saved_res = scipy.io.loadmat("pytorch_result.mat")
         gallery_features = torch.Tensor(saved_res["gallery_f"])
         gallery_labels = saved_res["gallery_label"].reshape(-1)
@@ -161,9 +163,8 @@ def visualize(data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint
             gallery_labels = np.array(gallery_labels)
 
     dataset = image_datasets["query"]
-    queries = list(range(len(dataset)))
+    # queries = list(range(len(dataset)))
     # random.shuffle(queries)
-    queries_len = len(queries)
 
     if use_saved_mat:
         q_feature = query_features[curr_idx]
@@ -194,4 +195,4 @@ def visualize(data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint
               for i in idx[:num_images]]
     fig = show_query_result(q_img, g_imgs, y, g_labels, imgs_per_row)
 
-    return fig, queries_len
+    return fig

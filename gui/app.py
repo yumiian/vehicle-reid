@@ -256,7 +256,7 @@ if task_type == "Model Testing":
     query_csv_path = st.sidebar.text_input("Query csv file path:", value="gui/datasets/reid/query.csv", help="query.csv file path")
     gallery_csv_path = st.sidebar.text_input("Gallery csv file path:", value="gui/datasets/reid/gallery.csv", help="gallery.csv file path")
     model_opts = st.sidebar.text_input("Model saved options", value="model/resnet50/opts.yaml", help="Model yaml file")
-    checkpoint = st.sidebar.text_input("Model checkpoint path", value="model/resnet50/net_59.pth", help="Model pth file")
+    checkpoint = st.sidebar.text_input("Model checkpoint path", value="model/resnet50/net_29.pth", help="Model pth file")
     batchsize = st.sidebar.number_input("Batch size", min_value=8, value=32, step=8)
 
     eval_gpu = st.sidebar.checkbox("GPU", help="Run evaluation on gpu too. This may need a high amount of GPU memory.")
@@ -279,7 +279,7 @@ if task_type == "Visualization":
     query_csv_path = st.sidebar.text_input("Query csv file path:", value="gui/datasets/reid/query.csv", help="query.csv file path")
     gallery_csv_path = st.sidebar.text_input("Gallery csv file path:", value="gui/datasets/reid/gallery.csv", help="gallery.csv file path")
     model_opts = st.sidebar.text_input("Model saved options", value="model/resnet50/opts.yaml", help="Model yaml file")
-    checkpoint = st.sidebar.text_input("Model checkpoint path", value="model/resnet50/net_59.pth", help="Model pth file")
+    checkpoint = st.sidebar.text_input("Model checkpoint path", value="model/resnet50/net_29.pth", help="Model pth file")
 
     advanced = st.sidebar.toggle("Advanced Settings")
 
@@ -289,22 +289,20 @@ if task_type == "Visualization":
         num_images = st.sidebar.number_input("Number of gallery images", min_value=2, value=29, help="Number of gallery images to show")
         imgs_per_row = st.sidebar.number_input("Images per row", min_value=2, value=6)
 
-        use_saved_mat = st.sidebar.checkbox("Use cache", help="Use precomputed features from a previous test.py run: pytorch_result.mat")
+        use_saved_mat = st.sidebar.checkbox("Use cache", value=True, help="Use precomputed features from a previous test.py run: pytorch_result.mat")
     else:
         batchsize = 64
         input_size = 224
         num_images = 29
         imgs_per_row = 6
-        use_saved_mat = False
+        use_saved_mat = True
 
-    curr_idx = st.slider("Select query index", min_value=0, max_value=100, value=0)
+    queries_len = len(pd.read_csv(query_csv_path)) - 1
+    curr_idx = st.slider("Select query index", min_value=0, max_value=queries_len, value=0)
 
-    run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
-    if run_button:
-        with st.spinner("Running..."):
-            with st.container(border=True):
-                fig, queries_len = visualization.visualize(data_dir=data_dir, query_csv_path=query_csv_path,
-                                                        gallery_csv_path=gallery_csv_path, model_opts=model_opts,
-                                                        checkpoint=checkpoint, batchsize=batchsize, input_size=input_size, 
-                                                        num_images=num_images, imgs_per_row=imgs_per_row, use_saved_mat=use_saved_mat, curr_idx=curr_idx)
-                st.pyplot(fig)
+    with st.spinner("Running..."):
+        with st.container(border=True):
+            fig = visualization.visualize(data_dir=data_dir, query_csv_path=query_csv_path, gallery_csv_path=gallery_csv_path, model_opts=model_opts,
+                                            checkpoint=checkpoint, batchsize=batchsize, input_size=input_size, num_images=num_images, 
+                                            imgs_per_row=imgs_per_row, use_saved_mat=use_saved_mat, curr_idx=curr_idx)
+            st.pyplot(fig)
