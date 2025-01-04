@@ -23,17 +23,3 @@ VIDEO_FILE = VIDEO_DIR / 'video.mp4'
 OUTPUT_DIR = ROOT / 'results'
 NEW_RESULT_DIR = ROOT / 'new_results'
 DATASETS_DIR = ROOT / "datasets"
-
-# Sources
-# VIDEO = 'Video'
-# SOURCES_LIST = [VIDEO, YOUTUBE]
-
-# Videos config
-# VIDEO_1_PATH = VIDEO_DIR / 'video_1.mp4'
-# VIDEO_2_PATH = VIDEO_DIR / 'video_2.mp4'
-# VIDEOS_DICT = {
-#     'video_1': VIDEO_1_PATH,
-#     'video_2': VIDEO_2_PATH,
-# }
-
-# ML Model config
