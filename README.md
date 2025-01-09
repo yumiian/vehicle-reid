@@ -45,10 +45,6 @@ Open Streamlit GUI
 $ streamlit run gui/app.py
 ```
 
-## License
-
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
-
 ## Acknowledgments
 
 * [regob's Vehicle Re-ID](https://github.com/regob/vehicle_reid)
