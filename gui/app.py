@@ -1,6 +1,7 @@
 from pathlib import Path
 import streamlit as st
 import pandas as pd
+import os
 
 import settings
 import helper
@@ -252,10 +253,14 @@ if task_type == "Model Training":
 
 if task_type == "Model Testing":
     data_dir = st.sidebar.text_input("Dataset directory:", value="gui/datasets/reid", help="Path to the dataset root directory")
-    query_csv_path = st.sidebar.text_input("Query csv file path:", value="gui/datasets/reid/query.csv", help="query.csv file path")
-    gallery_csv_path = st.sidebar.text_input("Gallery csv file path:", value="gui/datasets/reid/gallery.csv", help="gallery.csv file path")
-    model_opts = st.sidebar.text_input("Model saved options", value="model/resnet50/opts.yaml", help="Model yaml file")
-    checkpoint = st.sidebar.text_input("Model checkpoint path", value="model/resnet50/net_29.pth", help="Model pth file")
+    query_csv_path = os.path.join(data_dir, "query.csv")
+    gallery_csv_path = os.path.join(data_dir, "gallery.csv")
+    
+    model_dir = st.sidebar.text_input("Model directory:", value="model/resnet50", help="Path to the model root directory")
+    model_opts = os.path.join(model_dir, "opts.yaml")
+    checkpoint = st.sidebar.text_input("Model pth filename", value="net_59.pth", help="Model pth file")
+    checkpoint = os.path.join(model_dir, checkpoint)
+
     batchsize = st.sidebar.number_input("Batch size", min_value=8, value=32, step=8)
 
     eval_gpu = st.sidebar.checkbox("GPU", help="Run evaluation on gpu too. This may need a high amount of GPU memory.")
@@ -263,6 +268,8 @@ if task_type == "Model Testing":
     run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
     if run_button:
         with st.spinner("Running..."):
+            with st.container(border=True):
+                st.image("model/resnet50/train.jpg")
             with st.container(border=True):
                 stdout, stderr = reid.test("test.py", data_dir=data_dir, query_csv_path=query_csv_path,
                                            gallery_csv_path=gallery_csv_path, model_opts=model_opts,
