@@ -28,6 +28,9 @@ sudo apt update && sudo apt upgrade
 sudo apt install python3 python3-pip
 ```
 
+## Getting Started
+First, clone the repo or download the latest source code from [**release**](https://github.com/yumiian/vehicle-reid/releases).
+
 ### Create new virtual environment
 ```
 $ python3 -m venv reid
@@ -35,11 +38,11 @@ $ source reid/bin/activate
 ```
 
 ### Install the requirements
+This requirements.txt is tested on [CUDA](https://developer.nvidia.com/cuda-downloads) version 12.1. If you have different version, please install [PyTorch](https://pytorch.org/get-started/locally/) based on your installed CUDA version.
 ```
 $ pip3 install -r requirements.txt
 ```
 
-## Getting Started
 Open Streamlit GUI
 ```
 $ streamlit run gui/app.py
@@ -49,18 +52,3 @@ $ streamlit run gui/app.py
 
 * [regob's Vehicle Re-ID](https://github.com/regob/vehicle_reid)
 * [layumi's Re-ID](https://github.com/layumi/Person_reID_baseline_pytorch)
-
-## Authors
-
-Contributors names and contact info
-
-ex. Dominique Pizzie  
-ex. [@DomPizzie](https://twitter.com/dompizzie)
-
-## Version History
-
-* 0.2
-    * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
-* 0.1
-    * Initial Release
