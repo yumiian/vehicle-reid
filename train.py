@@ -519,8 +519,8 @@ def tpu_map_fn(index, flags):
 # ---------------------------
 x_epoch = []
 fig = plt.figure()
-ax0 = fig.add_subplot(121, title="loss")
-ax1 = fig.add_subplot(122, title="top1err")
+ax0 = fig.add_subplot(121, title="Loss")
+ax1 = fig.add_subplot(122, title="Top-1 Error")
 
 
 def draw_curve(current_epoch):
