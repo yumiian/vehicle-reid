@@ -43,7 +43,7 @@ This requirements.txt is tested on [CUDA](https://developer.nvidia.com/cuda-down
 $ pip3 install -r requirements.txt
 ```
 
-Open Streamlit GUI
+### Open Streamlit GUI
 ```
 $ streamlit run gui/app.py
 ```
