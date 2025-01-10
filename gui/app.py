@@ -153,18 +153,17 @@ if task_type == "Compare Images":
 ########################
 
 if task_type == "Batch Rename":
-    with st.sidebar:
-        crop_dir1 = st.text_input("Input first crop folder path", value="gui/results/result/crops", key="crop_dir1_input")
-        crop_dir2 = st.text_input("Input second crop folder path", value="gui/results/result2/crops", key="crop_dir2_input")
-        save_result_path = st.text_input("Save path here", key="save_path")
-        run_button = st.button("Run", type="primary", use_container_width=True)
+    crop_dir1 = st.sidebar.text_input("Input first crop folder path", value="gui/results/result/crops", key="crop_dir1_input")
+    crop_dir2 = st.sidebar.text_input("Input second crop folder path", value="gui/results/result2/crops", key="crop_dir2_input")
+    save_result_path = st.sidebar.text_input("Save path here", key="save_path")
+    run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
 
-        if run_button:
-            with st.spinner("Running..."):
-                new_crop_dir1 = helper.create_subfolders(new_result_path, "crop1")
-                new_crop_dir2 = helper.create_subfolders(new_result_path, "crop2")
-                rename.rename_files(crop_dir1, crop_dir2, new_crop_dir1, new_crop_dir2, save_result_path)
-            st.success("Done!")
+    if run_button:
+        with st.spinner("Running..."):
+            new_crop_dir1 = helper.create_subfolders(new_result_path, "crop1")
+            new_crop_dir2 = helper.create_subfolders(new_result_path, "crop2")
+            rename.rename_files(crop_dir1, crop_dir2, new_crop_dir1, new_crop_dir2, save_result_path)
+        st.success("Done!")
 
 ########################
 
