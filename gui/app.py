@@ -273,16 +273,17 @@ if task_type == "Model Testing":
     # error check
     if not os.path.isdir(data_dir):
         st.error("Dataset directory is not found!")
-        if not os.path.isfile(query_csv_path):
-            st.error("query.csv file not found in dataset directory!")
-        if not os.path.isfile(gallery_csv_path):
-            st.error("gallery.csv file not found in dataset directory!")
+    if not os.path.isfile(query_csv_path):
+        st.error("query.csv file not found in dataset directory!")
+    if not os.path.isfile(gallery_csv_path):
+        st.error("gallery.csv file not found in dataset directory!")
+
     if not os.path.isdir(model_dir):
         st.error("Model directory is not found!")
-        if not os.path.isfile(model_opts):
-            st.error("opts.yaml file not found in model directory!")
-        if not os.path.isfile(checkpoint):
-            st.error("Model pth file not found in model directory!")
+    if not os.path.isfile(model_opts):
+        st.error("opts.yaml file not found in model directory!")
+    if not os.path.isfile(checkpoint):
+        st.error("Model pth file not found in model directory!")
 
     filepaths = [query_csv_path, gallery_csv_path, model_opts, checkpoint]
     file_not_exists = any(not os.path.isfile(filepath) for filepath in filepaths)
@@ -330,16 +331,17 @@ if task_type == "Visualization":
     # error check
     if not os.path.isdir(data_dir):
         st.error("Dataset directory is not found!")
-        if not os.path.isfile(query_csv_path):
-            st.error("query.csv file not found in dataset directory!")
-        if not os.path.isfile(gallery_csv_path):
-            st.error("gallery.csv file not found in dataset directory!")
+    if not os.path.isfile(query_csv_path):
+        st.error("query.csv file not found in dataset directory!")
+    if not os.path.isfile(gallery_csv_path):
+        st.error("gallery.csv file not found in dataset directory!")
+        
     if not os.path.isdir(model_dir):
         st.error("Model directory is not found!")
-        if not os.path.isfile(model_opts):
-            st.error("opts.yaml file not found in model directory!")
-        if not os.path.isfile(checkpoint):
-            st.error("Model pth file not found in model directory!")
+    if not os.path.isfile(model_opts):
+        st.error("opts.yaml file not found in model directory!")
+    if not os.path.isfile(checkpoint):
+        st.error("Model pth file not found in model directory!")
 
     filepaths = [query_csv_path, gallery_csv_path, model_opts, checkpoint]
     file_not_exists = any(not os.path.isfile(filepath) for filepath in filepaths)
