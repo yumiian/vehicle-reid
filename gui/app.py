@@ -186,10 +186,6 @@ if task_type == "Model Training":
     data_dir = st.sidebar.text_input("Dataset directory:", value="gui/datasets/reid", help="Path to the dataset root directory")
     train_csv_path = os.path.join(data_dir, "train.csv")
     val_csv_path = os.path.join(data_dir, "val.csv")
-    if not os.path.isfile(train_csv_path):
-        st.error("train.csv file not found in dataset directory!")
-    if not os.path.isfile(val_csv_path):
-        st.error("val.csv file not found in dataset directory!")
 
     name = st.sidebar.text_input("Output model name:", value="resnet50", help="Define custom output model name")
 
@@ -233,7 +229,17 @@ if task_type == "Model Training":
         sphere=False
         circle=False
 
-    run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
+    # error check
+    if not os.path.isdir(data_dir):
+        st.error("Dataset directory is not found!")
+    if not os.path.isfile(train_csv_path):
+        st.error("train.csv file not found in dataset directory!")
+    if not os.path.isfile(val_csv_path):
+        st.error("val.csv file not found in dataset directory!")
+
+    paths = [data_dir, train_csv_path, val_csv_path]
+    path_not_exists = any(not os.path.exists(path) for path in paths)
+    run_button = st.sidebar.button("Run", type="primary", use_container_width=True, disabled=path_not_exists)
     if run_button:
         with st.spinner("Running..."):
             with st.container(border=True):
