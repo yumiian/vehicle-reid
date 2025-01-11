@@ -27,7 +27,7 @@ video_dir = Path(settings.VIDEO_DIR)
 video_path = Path(settings.VIDEO_FILE)
 save_path = Path(settings.OUTPUT_DIR)
 crops_dir = Path(settings.CROPS_DIR)
-datasets_path = Path(settings.DATASETS_DIR)
+datasets_dir = Path(settings.DATASETS_DIR)
 
 ########################
 
@@ -175,7 +175,7 @@ if task_type == "Dataset Split":
 
     if run_button:
         with st.spinner("Running..."):
-            dataset_dir = helper.create_subfolders(datasets_path, "reid")
+            dataset_dir = helper.create_subfolders(datasets_dir, "reid")
             datasplit.datasplit(crop_dir1, crop_dir2, dataset_dir)
         st.success("Done!")
 
