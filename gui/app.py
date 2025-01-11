@@ -285,9 +285,9 @@ if task_type == "Model Testing":
     if not os.path.isfile(checkpoint):
         st.error("Model pth file not found in model directory!")
 
-    filepaths = [query_csv_path, gallery_csv_path, model_opts, checkpoint]
-    file_not_exists = any(not os.path.isfile(filepath) for filepath in filepaths)
-    run_button = st.sidebar.button("Run", type="primary", use_container_width=True, disabled=file_not_exists)
+    paths = [data_dir, query_csv_path, gallery_csv_path, model_dir, model_opts, checkpoint]
+    path_not_exists = any(not os.path.exists(path) for path in paths)
+    run_button = st.sidebar.button("Run", type="primary", use_container_width=True, disabled=path_not_exists)
     if run_button:
         with st.spinner("Running..."):
             with st.container(border=True):
@@ -335,7 +335,7 @@ if task_type == "Visualization":
         st.error("query.csv file not found in dataset directory!")
     if not os.path.isfile(gallery_csv_path):
         st.error("gallery.csv file not found in dataset directory!")
-        
+
     if not os.path.isdir(model_dir):
         st.error("Model directory is not found!")
     if not os.path.isfile(model_opts):
@@ -343,9 +343,9 @@ if task_type == "Visualization":
     if not os.path.isfile(checkpoint):
         st.error("Model pth file not found in model directory!")
 
-    filepaths = [query_csv_path, gallery_csv_path, model_opts, checkpoint]
-    file_not_exists = any(not os.path.isfile(filepath) for filepath in filepaths)
-    if not file_not_exists: # if all the files exist
+    paths = [data_dir, query_csv_path, gallery_csv_path, model_dir, model_opts, checkpoint]
+    path_not_exists = any(not os.path.exists(path) for path in paths)
+    if not path_not_exists: # if all the files exist
         queries_len = len(pd.read_csv(query_csv_path)) - 1
         curr_idx = st.slider("Select query index", min_value=0, max_value=queries_len, value=0)
 
