@@ -169,7 +169,7 @@ if task_type == "Batch Rename":
 ########################
 
 if task_type == "Dataset Split":
-    crop_dir1 = st.sidebar.text_input("Input first crop folder path", value="gui/crops/crop1", key="crop_dir1_input")
+    crop_dir1 = st.sidebar.text_input("Input first crop folder path", value="gui/crops/crop", key="crop_dir1_input")
     crop_dir2 = st.sidebar.text_input("Input second crop folder path", value="gui/crops/crop2", key="crop_dir2_input")
     run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
 
