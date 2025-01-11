@@ -264,7 +264,7 @@ def save():
         # convert the dataframe back to list of dictionaries
         # edited_results = st.session_state.edited_df.to_dict(orient="records")
         # save_results(st.session_state.save_result_path, edited_results, mode='a')
-        save_results(st.session_state.save_result_path, st.session_state.results, mode='a')
+        save_results(st.session_state.save_result_path, st.session_state.results, mode='w')
         st.success(f"Result file successfully saved to {st.session_state.save_result_path}")
     except (FileNotFoundError, PermissionError):
         st.error("Save path is invalid!")
