@@ -260,10 +260,6 @@ if task_type == "Model Testing":
     data_dir = st.sidebar.text_input("Dataset directory:", value="gui/datasets/reid", help="Path to the dataset root directory")
     query_csv_path = os.path.join(data_dir, "query.csv")
     gallery_csv_path = os.path.join(data_dir, "gallery.csv")
-    if not os.path.isfile(query_csv_path):
-        st.error("query.csv file not found in dataset directory!")
-    if not os.path.isfile(gallery_csv_path):
-        st.error("gallery.csv file not found in dataset directory!")
     
     model_dir = st.sidebar.text_input("Model directory:", value="model/resnet50", help="Path to the model root directory")
     model_opts = os.path.join(model_dir, "opts.yaml")
@@ -274,7 +270,23 @@ if task_type == "Model Testing":
 
     eval_gpu = st.sidebar.checkbox("GPU", help="Run evaluation on gpu too. This may need a high amount of GPU memory.")
 
-    run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
+    # error check
+    if not os.path.isdir(data_dir):
+        st.error("Dataset directory is not found!")
+        if not os.path.isfile(query_csv_path):
+            st.error("query.csv file not found in dataset directory!")
+        if not os.path.isfile(gallery_csv_path):
+            st.error("gallery.csv file not found in dataset directory!")
+    if not os.path.isdir(model_dir):
+        st.error("Model directory is not found!")
+        if not os.path.isfile(model_opts):
+            st.error("opts.yaml file not found in model directory!")
+        if not os.path.isfile(checkpoint):
+            st.error("Model pth file not found in model directory!")
+
+    filepaths = [query_csv_path, gallery_csv_path, model_opts, checkpoint]
+    file_not_exists = any(not os.path.isfile(filepath) for filepath in filepaths)
+    run_button = st.sidebar.button("Run", type="primary", use_container_width=True, disabled=file_not_exists)
     if run_button:
         with st.spinner("Running..."):
             with st.container(border=True):
@@ -291,10 +303,13 @@ if task_type == "Model Testing":
 
 if task_type == "Visualization":
     data_dir = st.sidebar.text_input("Dataset directory:", value="gui/datasets/reid", help="Path to the dataset root directory")
-    query_csv_path = st.sidebar.text_input("Query csv file path:", value="gui/datasets/reid/query.csv", help="query.csv file path")
-    gallery_csv_path = st.sidebar.text_input("Gallery csv file path:", value="gui/datasets/reid/gallery.csv", help="gallery.csv file path")
-    model_opts = st.sidebar.text_input("Model saved options", value="model/resnet50/opts.yaml", help="Model yaml file")
-    checkpoint = st.sidebar.text_input("Model checkpoint path", value="model/resnet50/net_29.pth", help="Model pth file")
+    query_csv_path = os.path.join(data_dir, "query.csv")
+    gallery_csv_path = os.path.join(data_dir, "gallery.csv")
+    
+    model_dir = st.sidebar.text_input("Model directory:", value="model/resnet50", help="Path to the model root directory")
+    model_opts = os.path.join(model_dir, "opts.yaml")
+    checkpoint = st.sidebar.text_input("Model pth filename", value="net_59.pth", help="Model pth file")
+    checkpoint = os.path.join(model_dir, checkpoint)
 
     advanced = st.sidebar.toggle("Advanced Settings")
 
@@ -311,13 +326,30 @@ if task_type == "Visualization":
         num_images = 29
         imgs_per_row = 6
         use_saved_mat = True
+    
+    # error check
+    if not os.path.isdir(data_dir):
+        st.error("Dataset directory is not found!")
+        if not os.path.isfile(query_csv_path):
+            st.error("query.csv file not found in dataset directory!")
+        if not os.path.isfile(gallery_csv_path):
+            st.error("gallery.csv file not found in dataset directory!")
+    if not os.path.isdir(model_dir):
+        st.error("Model directory is not found!")
+        if not os.path.isfile(model_opts):
+            st.error("opts.yaml file not found in model directory!")
+        if not os.path.isfile(checkpoint):
+            st.error("Model pth file not found in model directory!")
 
-    queries_len = len(pd.read_csv(query_csv_path)) - 1
-    curr_idx = st.slider("Select query index", min_value=0, max_value=queries_len, value=0)
+    filepaths = [query_csv_path, gallery_csv_path, model_opts, checkpoint]
+    file_not_exists = any(not os.path.isfile(filepath) for filepath in filepaths)
+    if not file_not_exists: # if all the files exist
+        queries_len = len(pd.read_csv(query_csv_path)) - 1
+        curr_idx = st.slider("Select query index", min_value=0, max_value=queries_len, value=0)
 
-    with st.spinner("Running..."):
-        with st.container(border=True):
-            fig = visualization.visualize(data_dir=data_dir, query_csv_path=query_csv_path, gallery_csv_path=gallery_csv_path, model_opts=model_opts,
-                                            checkpoint=checkpoint, batchsize=batchsize, input_size=input_size, num_images=num_images, 
-                                            imgs_per_row=imgs_per_row, use_saved_mat=use_saved_mat, curr_idx=curr_idx)
-            st.pyplot(fig)
+        with st.spinner("Running..."):
+            with st.container(border=True):
+                fig = visualization.visualize(data_dir=data_dir, query_csv_path=query_csv_path, gallery_csv_path=gallery_csv_path, model_opts=model_opts,
+                                                checkpoint=checkpoint, batchsize=batchsize, input_size=input_size, num_images=num_images, 
+                                                imgs_per_row=imgs_per_row, use_saved_mat=use_saved_mat, curr_idx=curr_idx)
+                st.pyplot(fig)
