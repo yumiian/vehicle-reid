@@ -184,8 +184,13 @@ if task_type == "Dataset Split":
 
 if task_type == "Model Training":
     data_dir = st.sidebar.text_input("Dataset directory:", value="gui/datasets/reid", help="Path to the dataset root directory")
-    train_csv_path = st.sidebar.text_input("Train csv file path:", value="gui/datasets/reid/train.csv", help="train.csv file path")
-    val_csv_path = st.sidebar.text_input("Val csv file path:", value="gui/datasets/reid/val.csv", help="val.csv file path")
+    train_csv_path = os.path.join(data_dir, "train.csv")
+    val_csv_path = os.path.join(data_dir, "val.csv")
+    if not os.path.isfile(train_csv_path):
+        st.error("train.csv file not found in dataset directory!")
+    if not os.path.isfile(val_csv_path):
+        st.error("val.csv file not found in dataset directory!")
+
     name = st.sidebar.text_input("Output model name:", value="resnet50", help="Define custom output model name")
 
     batchsize = st.sidebar.number_input("Batch size", min_value=8, value=32, step=8)
@@ -255,6 +260,10 @@ if task_type == "Model Testing":
     data_dir = st.sidebar.text_input("Dataset directory:", value="gui/datasets/reid", help="Path to the dataset root directory")
     query_csv_path = os.path.join(data_dir, "query.csv")
     gallery_csv_path = os.path.join(data_dir, "gallery.csv")
+    if not os.path.isfile(query_csv_path):
+        st.error("query.csv file not found in dataset directory!")
+    if not os.path.isfile(gallery_csv_path):
+        st.error("gallery.csv file not found in dataset directory!")
     
     model_dir = st.sidebar.text_input("Model directory:", value="model/resnet50", help="Path to the model root directory")
     model_opts = os.path.join(model_dir, "opts.yaml")
