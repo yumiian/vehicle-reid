@@ -95,7 +95,7 @@ if task_type == "Compare Images":
 
         save_result = st.checkbox("Save results", value=False)
         if save_result:
-            st.session_state.save_result_path = st.text_input("Save path here", key="save_path", placeholder="result.txt")
+            st.session_state.save_result_path = st.text_input("Save path here", value="gui/results.txt", key="save_path")
             st.button("Save result", use_container_width=True, on_click=comparison.save)
 
         show_result = st.checkbox("Show results", value=False)
@@ -156,7 +156,7 @@ if task_type == "Compare Images":
 if task_type == "Batch Rename":
     crop_dir1 = st.sidebar.text_input("Input first crop folder path", value="gui/results/result/crops", key="crop_dir1_input")
     crop_dir2 = st.sidebar.text_input("Input second crop folder path", value="gui/results/result2/crops", key="crop_dir2_input")
-    save_result_path = st.sidebar.text_input("Save path here", key="save_path")
+    save_result_path = st.sidebar.text_input("Save path here", value="gui/results.txt", key="save_path")
     run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
 
     if run_button:
