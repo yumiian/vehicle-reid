@@ -161,8 +161,8 @@ if task_type == "Batch Rename":
 
     if run_button:
         with st.spinner("Running..."):
-            new_crop_dir1 = helper.create_subfolders(new_result_path, "crop1")
-            new_crop_dir2 = helper.create_subfolders(new_result_path, "crop2")
+            new_crop_dir1 = helper.create_subfolders(new_result_path, "crop")
+            new_crop_dir2 = helper.create_subfolders(new_result_path, "crop")
             rename.rename_files(crop_dir1, crop_dir2, new_crop_dir1, new_crop_dir2, save_result_path)
         st.success("Done!")
 
