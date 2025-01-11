@@ -21,5 +21,5 @@ VIDEO_DIR = ROOT / 'videos'
 VIDEO_FILE = VIDEO_DIR / 'video.mp4'
 
 OUTPUT_DIR = ROOT / 'results'
-NEW_RESULT_DIR = ROOT / 'new_results'
+CROPS_DIR = ROOT / 'crops'
 DATASETS_DIR = ROOT / "datasets"

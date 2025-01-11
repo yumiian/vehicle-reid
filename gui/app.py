@@ -26,7 +26,7 @@ model_path = Path(settings.YOLO_MODEL)
 video_dir = Path(settings.VIDEO_DIR)
 video_path = Path(settings.VIDEO_FILE)
 save_path = Path(settings.OUTPUT_DIR)
-new_result_path = Path(settings.NEW_RESULT_DIR)
+crops_dir = Path(settings.CROPS_DIR)
 datasets_path = Path(settings.DATASETS_DIR)
 
 ########################
@@ -161,17 +161,16 @@ if task_type == "Batch Rename":
 
     if run_button:
         with st.spinner("Running..."):
-            new_crop_dir1 = helper.create_subfolders(new_result_path, "crop")
-            new_crop_dir2 = helper.create_subfolders(new_result_path, "crop")
+            new_crop_dir1 = helper.create_subfolders(crops_dir, "crop")
+            new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
             rename.rename_files(crop_dir1, crop_dir2, new_crop_dir1, new_crop_dir2, save_result_path)
         st.success("Done!")
 
 ########################
 
 if task_type == "Dataset Split":
-    crop_dir1 = st.sidebar.text_input("Input first crop folder path", value="gui/new_results/crop1", key="crop_dir1_input")
-    crop_dir2 = st.sidebar.text_input("Input second crop folder path", value="gui/new_results/crop2", key="crop_dir2_input")
-    # output_path = st.sidebar.text_input("Save path here", key="save_path")
+    crop_dir1 = st.sidebar.text_input("Input first crop folder path", value="gui/crops/crop1", key="crop_dir1_input")
+    crop_dir2 = st.sidebar.text_input("Input second crop folder path", value="gui/crops/crop2", key="crop_dir2_input")
     run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
 
     if run_button:
