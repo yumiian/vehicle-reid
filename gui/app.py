@@ -325,7 +325,7 @@ if task_type == "Visualization":
         input_size = 224
         num_images = 29
         imgs_per_row = 6
-        use_saved_mat = True
+        use_saved_mat = False
     
     # error check
     if not os.path.isdir(data_dir):
