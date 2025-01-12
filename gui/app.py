@@ -11,6 +11,7 @@ import rename
 import datasplit
 import reid
 import visualization
+import prepare_VeRi
 
 st.set_page_config(
     page_title="Vehicle Reidentification",
@@ -179,6 +180,27 @@ if task_type == "Dataset Split":
             datasplit.datasplit(crop_dir1, crop_dir2, dataset_dir)
         st.success("Done!")
 
+    VeRi = st.sidebar.checkbox("VeRi")
+    if VeRi:
+        VeRi_dir = st.sidebar.text_input("Dataset directory", value="gui/datasets/VeRi")
+        train_path = os.path.join(VeRi_dir, "name_train.txt")
+        train_csv_path = os.path.join(VeRi_dir, "train.csv")
+
+        test_path = os.path.join(VeRi_dir, "name_test.txt")
+        test_csv_path = os.path.join(VeRi_dir, "gallery.csv")
+
+        query_path = os.path.join(VeRi_dir, "name_query.txt")
+        query_csv_path = os.path.join(VeRi_dir, "query.csv")
+
+        run_button = st.sidebar.button("Run", type="primary", use_container_width=True, key="veri_run_button")
+        if run_button:
+            with st.spinner("Running..."):
+                prepare_VeRi.txt_to_csv(train_path, train_csv_path, "image_train")
+                datasplit.train_val_split(VeRi_dir)
+                prepare_VeRi.txt_to_csv(test_path, test_csv_path, "image_test")
+                prepare_VeRi.txt_to_csv(query_path, query_csv_path, "image_query")
+            st.success("Done!")
+
 ########################
 
 if task_type == "Model Training":
@@ -296,7 +318,8 @@ if task_type == "Model Testing":
     if run_button:
         with st.spinner("Running..."):
             with st.container(border=True):
-                st.image("model/resnet50/train.jpg")
+                test_result_path = os.path.join(model_dir, "train.jpg")
+                st.image(test_result_path)
             with st.container(border=True):
                 stdout, stderr = reid.test("test.py", data_dir=data_dir, query_csv_path=query_csv_path,
                                            gallery_csv_path=gallery_csv_path, model_opts=model_opts,

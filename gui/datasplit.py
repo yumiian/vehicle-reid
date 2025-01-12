@@ -98,7 +98,7 @@ def train_val_split(labels_path):
     # train__path = os.path.join(labels_path, "train_.csv")
     val_path = os.path.join(labels_path, "val.csv")
 
-    df = pd.read_csv(train_path)
+    df = pd.read_csv(train_path, dtype={'id': str}) # Ensure 'id' is read as a string
     random.seed(42)
     train_size = int(0.75 * len(df))
     val_size = len(df) - train_size
