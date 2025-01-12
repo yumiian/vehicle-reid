@@ -1,5 +1,8 @@
 __pycache__
 model/*
+gui/crops/*
+gui/datasets/*
+gui/results/*
 
 *.jpg
 *.jpeg
