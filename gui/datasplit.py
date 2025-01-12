@@ -43,20 +43,23 @@ def split(output_path, files, gallery, query):
     gallery_path = os.path.join(output_path, "gallery")
     query_path = os.path.join(output_path, "query")
 
-    os.makedirs(train_path, exist_ok=True)
-    os.makedirs(gallery_path, exist_ok=True)
-    os.makedirs(query_path, exist_ok=True)
-
     # make sure there is no duplicates on both lists
     if [x for x in gallery if x in query]:
-        raise ValueError("Duplicates found! Please retry")
+        return False
     
     # remove gallery and query files from all files to create train files
     train = [y for y in files if y not in gallery and y not in query]
 
+    os.makedirs(train_path, exist_ok=True)
+    os.makedirs(gallery_path, exist_ok=True)
+    os.makedirs(query_path, exist_ok=True)
+
     move_files(train, train_path)
     move_files(gallery, gallery_path)
     move_files(query, query_path)
+
+    # no duplicates found
+    return True
 
 def create_txt_labels(output_path):
     train_path = os.path.join(output_path, "train")
@@ -116,7 +119,14 @@ def datasplit(crop_dir1, crop_dir2, output_path):
     random.shuffle(crop_files)
     query = filter_files(crop_files)
 
-    split(output_path, crop_files, gallery, query)
+    # Recursively split the dataset until no duplicates are found
+    while not split(output_path, crop_files, gallery, query):
+        # Re-shuffle files and regenerate gallery and query
+        random.shuffle(crop_files)
+        gallery = filter_files(crop_files)
+        random.shuffle(crop_files)
+        query = filter_files(crop_files)
+        
     create_csv_labels(output_path)
     train_val_split(output_path)
     # create_txt_labels(output_path)
