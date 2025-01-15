@@ -1,57 +1,68 @@
 # Vehicle Re-identification for Traffic Impact Assessment using Deep Learning
 
-Application with GUI built for Vehicle Re-ID tasks using Streamlit.
+A Streamlit-based application designed for Vehicle Re-Identification (Re-ID) tasks, featuring tasks like dataset preparation, model training, testing, and visualization.
 
 ## Disclaimer
 
 This code only works in **Linux OS**. If you are using Windows, you can use [**WSL (Windows Subsystem for Linux)**](https://learn.microsoft.com/en-us/windows/wsl/install) to install Ubuntu OS on your Windows.
 
-## Installation
-### WSL Installation
-Windows PowerShell:
+## WSL Installation (for Windows)
+**If you already have Linux OS, you can skip this step.**
+
+Install WSL using Windows PowerShell:
 ```
 wsl --install
 ```
+
 or
 ```
 wsl.exe --install ubuntu
 ```
+
 If encounter any error, make sure **Windows Subsystem For Linux** is turned on in **Turn Windows Features On and Off**. Then, restart Windows.
 
-### Update all packages in Ubuntu:
+Update all packages in Ubuntu:
 ```
 sudo apt update && sudo apt upgrade
 ```
 
-### Make sure Python are installed:
+Make sure Python are installed:
 ```
 sudo apt install python3 python3-pip
 ```
 
 ## Getting Started
-First, clone the repo or download the latest source code from [**release**](https://github.com/yumiian/vehicle-reid/releases).
+First, clone the repo or download the latest source code from [**releases**](https://github.com/yumiian/vehicle-reid/releases).
 
-### Create new virtual environment
+Create new virtual environment:
 ```
 $ python3 -m venv reid
 $ source reid/bin/activate
 ```
 
-### Install the requirements
-This requirements.txt is tested on [CUDA](https://developer.nvidia.com/cuda-downloads) version 12.1. If you have different version, please install [PyTorch](https://pytorch.org/get-started/locally/) based on your installed CUDA version.
-```
-$ pip3 install -r requirements.txt
-```
+Install [CUDA](https://developer.nvidia.com/cuda-downloads) from Nvidia to utilize the power of GPU to train and test the model. 
 
-### Check your CUDA version (cmd)
+Check your installed CUDA version using this command (cmd):
 ```
 nvcc --version
 ```
 
-### Open Streamlit GUI
+Then, install [PyTorch](https://pytorch.org/get-started/locally/) based on your installed CUDA version. Example for installing PyTorch for CUDA version 12.1:
+```
+$ pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
+
+Install the required libraries:
+```
+$ pip3 install -r requirements.txt
+```
+
+Finally, open Streamlit GUI:
 ```
 $ streamlit run gui/app.py
 ```
+
+Now you can view the application in your browser. By default, the app local URL is at http://localhost:8501/.
 
 ## Acknowledgments
 
