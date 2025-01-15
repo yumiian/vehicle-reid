@@ -93,14 +93,14 @@ def create_csv_labels(output_path):
     create_csv(gallery_path, output_path, "gallery")
     create_csv(query_path, output_path, "query")
 
-def train_val_split(labels_path):
+def train_val_split(labels_path, split_ratio):
     train_path = os.path.join(labels_path, "train.csv")
     # train__path = os.path.join(labels_path, "train_.csv")
     val_path = os.path.join(labels_path, "val.csv")
 
     df = pd.read_csv(train_path, dtype={'id': str}) # Ensure 'id' is read as a string
     random.seed(42)
-    train_size = int(0.75 * len(df))
+    train_size = int(split_ratio * len(df))
     val_size = len(df) - train_size
     val_idxes = random.sample(range(len(df)), val_size)
     train_idxes = list(set(range(len(df))) - set(val_idxes))
@@ -108,7 +108,7 @@ def train_val_split(labels_path):
     train_df.to_csv(train_path, index=False)
     val_df.to_csv(val_path, index=False)
 
-def datasplit(crop_dir1, crop_dir2, output_path):
+def datasplit(crop_dir1, crop_dir2, output_path, split_ratio):
     crop_files1 = image_listdir(crop_dir1)
     crop_files2 = image_listdir(crop_dir2)
 
@@ -128,7 +128,7 @@ def datasplit(crop_dir1, crop_dir2, output_path):
         query = filter_files(crop_files)
         
     create_csv_labels(output_path)
-    train_val_split(output_path)
+    train_val_split(output_path, split_ratio)
     # create_txt_labels(output_path)
 
 def transform_txt_labels(txt_path, out_path, img_dir):
