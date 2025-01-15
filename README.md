@@ -1,6 +1,6 @@
 # Vehicle Re-identification for Traffic Impact Assessment using Deep Learning
 
-Application with GUI for Vehicle Re-ID tasks build using Streamlit.
+Application with GUI built for Vehicle Re-ID tasks using Streamlit.
 
 ## Disclaimer
 
@@ -41,6 +41,11 @@ $ source reid/bin/activate
 This requirements.txt is tested on [CUDA](https://developer.nvidia.com/cuda-downloads) version 12.1. If you have different version, please install [PyTorch](https://pytorch.org/get-started/locally/) based on your installed CUDA version.
 ```
 $ pip3 install -r requirements.txt
+```
+
+### Check your CUDA version (cmd)
+```
+nvcc --version
 ```
 
 ### Open Streamlit GUI
