@@ -2,7 +2,6 @@ import os
 import shutil
 
 def batch_rename(input_dir, output_dir, old, new):
-    # os.makedirs(output_dir, exist_ok=True)
     for filename in os.listdir(input_dir):
         if not filename.endswith(".jpg"):
             continue
@@ -15,9 +14,7 @@ def batch_rename(input_dir, output_dir, old, new):
         old_filepath = os.path.join(input_dir, filename)
         new_filename = filename.replace(f"-{old}", f"-{new}")
         new_filepath = os.path.join(output_dir, new_filename)
-        # new_filepath = os.path.join(input_dir, new_filename)
         shutil.copy(old_filepath, new_filepath)
-        # os.rename(old_filepath, new_filepath)
 
 def read_result_file(result_file):
     imgs1 = []

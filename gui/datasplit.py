@@ -95,7 +95,6 @@ def create_csv_labels(output_path):
 
 def train_val_split(labels_path, split_ratio):
     train_path = os.path.join(labels_path, "train.csv")
-    # train__path = os.path.join(labels_path, "train_.csv")
     val_path = os.path.join(labels_path, "val.csv")
 
     df = pd.read_csv(train_path, dtype={'id': str}) # Ensure 'id' is read as a string
@@ -130,39 +129,3 @@ def datasplit(crop_dir1, crop_dir2, output_path, split_ratio):
     create_csv_labels(output_path)
     train_val_split(output_path, split_ratio)
     # create_txt_labels(output_path)
-
-def transform_txt_labels(txt_path, out_path, img_dir):
-    df = pd.read_csv(txt_path, sep=" ")
-    df.columns = ["path", "id", "cam"]
-    df = df[["path", "id"]]
-    df["path"] = df["path"].apply(lambda x: os.path.join(img_dir, x))
-    df.to_csv(out_path, index=False)
-
-def train_val_csv_labels(train_txt_path, train_csv_path, val_csv_path):
-    df = pd.read_csv(train_txt_path, sep=" ")
-    df.columns = ["path", "id", "cam"]
-    df = df[["path", "id"]]
-    df["path"] = df["path"].apply(lambda x: os.path.join("train", x))
-
-    # fix the seed to always generate the same sets
-    random.seed(42)
-
-    train_size = int(0.75 * len(df))
-    val_size = len(df) - train_size
-    val_idxes = random.sample(range(len(df)), val_size)
-    train_idxes = list(set(range(len(df))) - set(val_idxes))
-
-    train_df, val_df = df.loc[train_idxes], df.loc[val_idxes]
-    len(train_df), len(val_df)
-    train_df.to_csv(train_csv_path, index=False)
-    val_df.to_csv(val_csv_path, index=False)
-
-def txt_to_csv_labels(labels_path):
-    train_path = os.path.join(labels_path, "train.txt")
-    gallery_path = os.path.join(labels_path, "gallery.txt")
-    query_path = os.path.join(labels_path, "query.txt")
-    val_path = os.path.join(labels_path, "val.csv")
-
-    transform_txt_labels(gallery_path, os.path.splitext(gallery_path)[0] + ".csv", "gallery")
-    transform_txt_labels(query_path, os.path.splitext(query_path)[0] + ".csv", "query")
-    train_val_csv_labels(train_path, os.path.splitext(train_path)[0] + ".csv", val_path)

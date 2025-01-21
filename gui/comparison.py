@@ -55,15 +55,11 @@ def compare_images(crop1_path, crop2_path, image1_path, image2_path, label1_path
     img2_ = cv2.imread(crop2_path)
     img1 = cv2.cvtColor(img1_, cv2.COLOR_BGR2RGB)
     img2 = cv2.cvtColor(img2_, cv2.COLOR_BGR2RGB)
-    # img1_resized = cv2.resize(img1, None, fx=0.7, fy=0.7)
-    # img2_resized = cv2.resize(img2, None, fx=0.7, fy=0.7)
 
     full_img1_ = cv2.imread(image1_path)
     full_img2_ = cv2.imread(image2_path)
     full_img1 = cv2.cvtColor(full_img1_, cv2.COLOR_BGR2RGB)
     full_img2 = cv2.cvtColor(full_img2_, cv2.COLOR_BGR2RGB)
-    # full_img1_resized = cv2.resize(full_img1, None, fx=0.7, fy=0.7)
-    # full_img2_resized = cv2.resize(full_img2, None, fx=0.7, fy=0.7)
 
     id_list1, xywh_dict1 = read_txt(label1_path)
     id_list2, xywh_dict2 = read_txt(label2_path)
@@ -73,26 +69,17 @@ def compare_images(crop1_path, crop2_path, image1_path, image2_path, label1_path
     
     col1, col2 = st.columns(2, vertical_alignment="center", border=False)
     col3, col4 = st.columns(2, vertical_alignment="center", border=False)
-    # with st.container(border=True):
     with col1:
-        # st.header("Crop 1")
         st.image(img1, caption="Crop 1", width=100)
-        # st.image(img1_resized, caption="Crop 1")
 
     with col2:
-        # st.header("Crop 2")
         st.image(img2, caption="Crop 2", width=100)
-        # st.image(img2_resized, caption="Crop 2")
 
     with col3:
-        # st.header("Image 1")
         st.image(full_img1, caption="Full image 1", width=550)
-        # st.image(full_img1_resized, caption="Full image 1")
 
     with col4:
-        # st.header("Image 2")
         st.image(full_img2, caption="Full image 2", width=550)
-        # st.image(full_img2_resized, caption="Full image 2")
 
 def filter_files(files):
     used_id = []
@@ -119,9 +106,6 @@ def get_image_label_path(img):
     path_list = os.path.normpath(img).split(os.path.sep) # ["gui","results","result","crops","KJ-C1-8AM-frame_000001-000000.jpg"]
     ori_path = os.path.join(*path_list[:-1]) # datasets2/track/KJ-C1-08AM/crops
     join_path = path_list[-1].split("-")[:-1] # ['KJ', 'C1', '08AM', 'frame_007489']
-    # delimiter = os.path.splitext(img)[0].split("\\")
-    # ori_path = delimiter[0]  # datasets2/track/KJ-C1-08AM/crops
-    # join_path = delimiter[-1].split("-")[:-1] # ['KJ', 'C1', '08AM', 'frame_007489']
     new_join_path = "-".join(join_path) # KJ-C1-08AM-frame_007489
     full_path = os.path.join(ori_path, new_join_path) # datasets2/track/KJ-C1-08AM/crops\KJ-C1-08AM-frame_007489
 
@@ -167,8 +151,6 @@ def initialize_session_state():
         st.session_state.image_list2 = []
     if "results" not in st.session_state:
         st.session_state.results = []
-    # if "edited_df" not in st.session_state:
-    #     st.session_state.edited_df = None
     if "bback1_disabled" not in st.session_state:
         st.session_state.bback1_disabled = True
     if "bnext1_disabled" not in st.session_state:
@@ -183,12 +165,6 @@ def initialize_session_state():
         st.session_state.bdel1_disabled = False
     if "bdel2_disabled" not in st.session_state:
         st.session_state.bdel2_disabled = False
-    # if "bsave_disabled" not in st.session_state:
-    #     st.session_state.bsave_disabled = True
-    # if "new_img_list1" not in st.session_state:
-    #     st.session_state.new_img_list1 = []
-    # if "new_img_list2" not in st.session_state:
-    #     st.session_state.new_img_list2 = []
 
 def start_comparison():
     """Callback for the Run button"""
@@ -204,16 +180,6 @@ def start_comparison():
         st.error("Invalid path!")
     except Exception as e:
         st.error("Something went wrong", e)
-
-# def resume_comparison():
-#     st.session_state.is_running = True
-#     # Initialize lists
-#     crop_files1 = image_listdir(st.session_state.crop_dir1)
-#     crop_files2 = image_listdir(st.session_state.crop_dir2)
-#     st.session_state.image_list1 = filter_files(crop_files1)
-#     st.session_state.image_list2 = filter_files(crop_files2)
-#     st.session_state.image_list1 = st.session_state.new_img_list1
-#     st.session_state.image_list2 = st.session_state.new_img_list2
 
 def next1():
     if len(st.session_state.image_list1) > 1:
@@ -261,42 +227,9 @@ def match():
 
 def save():
     try:
-        # convert the dataframe back to list of dictionaries
-        # edited_results = st.session_state.edited_df.to_dict(orient="records")
-        # save_results(st.session_state.save_result_path, edited_results, mode='a')
         save_results(st.session_state.save_result_path, st.session_state.results, mode='w')
         st.success(f"Result file successfully saved to {st.session_state.save_result_path}")
     except (FileNotFoundError, PermissionError):
         st.error("Save path is invalid!")
     except Exception:
         st.error("Please check your save path!")
-
-# def resume():
-#     resume_comparison()
-#     st.session_state.resume_img_list1, st.session_state.resume_img_list2 = read_last_imgs(st.session_state.resume_file_path)
-#     # st.write(st.session_state.resume_img_list1, st.session_state.resume_img_list2)
-
-#     st.session_state.current_img_list1 = [os.path.splitext(image1)[0].split("-")[-1] for image1 in st.session_state.image_list1]
-#     st.session_state.current_img_list2 = [os.path.splitext(image2)[0].split("-")[-1] for image2 in st.session_state.image_list2]
-
-#     # st.write(st.session_state.current_img_list1)
-#     # st.write(st.session_state.current_img_list2)
-
-#     # st.session_state.new_img_list1 = set(st.session_state.resume_img_list1) ^ set(st.session_state.current_img_list1)
-#     st.session_state.new_img_list1 = [item for item in st.session_state.resume_img_list1 if item not in st.session_state.current_img_list1] + [item for item in st.session_state.current_img_list1 if item not in st.session_state.resume_img_list1]
-#     st.session_state.new_img_list2 = [item for item in st.session_state.resume_img_list2 if item not in st.session_state.current_img_list2] + [item for item in st.session_state.current_img_list2 if item not in st.session_state.resume_img_list2]
-    
-#     # START HERE
-
-#     # FileNotFoundError: [Errno 2] No such file or directory: '000000'
-#     # CHANGE IT BACK TO path
-    
-#     st.write(st.session_state.image_list1)
-#     st.write(st.session_state.image_list2)
-    
-#     # st.write(st.session_state.new_img_list1)
-#     start_comparison()
-
-#     st.write(st.session_state.image_list1)
-#     st.write(st.session_state.image_list2)
-#     # save_last_imgs(resume_path, done_img1, done_img2)

@@ -39,8 +39,6 @@ def edit_yolo_txt(input_path, output_path):
 def organize(save_path, prefix):
     sorted_files = sorted(os.listdir(save_path), key=extract_number)
 
-    # prefix = os.path.basename(os.path.normpath(save_path))
-
     for file in sorted_files:
         # skip the folder name that is not frame
         if "frame" not in file:
@@ -103,7 +101,6 @@ def track(model, video_path, save_path, show=False, conf=0.7, line_width=2, clas
     model = YOLO(model)
     cap = cv2.VideoCapture(video_path)
 
-    # prefix = os.path.basename(os.path.normpath(save_path))
     filename = f"{prefix}-frame_"
 
     while cap.isOpened():

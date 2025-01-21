@@ -32,8 +32,6 @@ def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50",
     
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     stdout, stderr = process.communicate()
-    # out = "\n".join(stdout.split("\n"))
-    # err = "\n".join(stderr.split("\n"))
 
     return stdout, stderr
 
