@@ -107,10 +107,6 @@ if task_type == "Compare Images":
         if (len(st.session_state.image_list1) > 0) and (len(st.session_state.image_list2) > 0):
             img1_path, label1_path = comparison.get_image_label_path(st.session_state.image_list1[st.session_state.img1])
             img2_path, label2_path = comparison.get_image_label_path(st.session_state.image_list2[st.session_state.img2])
-            
-            # Display images
-            with st.container(border=True):
-                comparison.compare_images(st.session_state.image_list1[st.session_state.img1], st.session_state.image_list2[st.session_state.img2], img1_path, img2_path, label1_path, label2_path)
 
             # Update button states
             st.session_state.bnext1_disabled = st.session_state.img1 == len(st.session_state.image_list1) - 1
@@ -127,6 +123,10 @@ if task_type == "Compare Images":
             bcol2.button("Next", use_container_width=True, key="bnext1", disabled=st.session_state.bnext1_disabled, on_click=comparison.next1)
             bcol3.button("Previous", use_container_width=True, key="bback2", disabled=st.session_state.bback2_disabled, on_click=comparison.back2)
             bcol4.button("Next", use_container_width=True, key="bnext2", disabled=st.session_state.bnext2_disabled, on_click=comparison.next2)
+
+            # Display images
+            with st.container(border=True):
+                comparison.compare_images(st.session_state.image_list1[st.session_state.img1], st.session_state.image_list2[st.session_state.img2], img1_path, img2_path, label1_path, label2_path)
             
             bcol5, bcol6 = st.columns(2, vertical_alignment="bottom")
             bcol5.button("Delete", use_container_width=True, key="bdel1", disabled=st.session_state.bdel1_disabled, on_click=comparison.del1)
