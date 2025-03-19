@@ -95,7 +95,6 @@ def compare_data(table_more, table_less, column_name):
 
 def select_data(table, column_name):
     conn = sqlite3.connect("gui/reid.db")
-    conn.row_factory = sqlite3.Row # access data by column name
     cursor = conn.cursor()
 
     query = f"SELECT {column_name} FROM {table}"

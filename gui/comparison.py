@@ -246,6 +246,7 @@ def match():
 def save():
     database.create_table("saved")
     database.copy_table("checkpoint", "saved", "id, image1, image2")
+    st.success("Results saved.")
 
 def resume():
     checkpoint_exist = database.check_table_exist("checkpoint")
