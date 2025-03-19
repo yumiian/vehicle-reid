@@ -99,6 +99,9 @@ if task_type == "Compare Images":
             st.session_state.is_reviewing = True
         else:
             st.session_state.is_reviewing = False
+
+        if os.path.isfile("gui/reid.db"):
+            st.button("Resume from checkpoint", use_container_width=True, on_click=comparison.resume)
         
     st.sidebar.button("Run", type="primary", use_container_width=True, on_click=comparison.start_comparison)
     

@@ -3,6 +3,8 @@ import cv2
 import pandas as pd
 import streamlit as st
 
+import database
+
 def image_listdir(path):
     return sorted([os.path.join(path, f) for f in os.listdir(path) if f.endswith(('png', 'jpg', 'jpeg'))])
 
@@ -175,6 +177,10 @@ def start_comparison():
         st.session_state.image_list1 = filter_files(crop_files1)
         st.session_state.image_list2 = filter_files(crop_files2)
 
+        datalist = zip(st.session_state.image_list1, st.session_state.image_list2)
+        database.create_table("comparison")
+        database.insert_data("comparison", datalist)
+
         st.session_state.is_running = True
     except FileNotFoundError:
         st.error("Invalid path!")
@@ -214,6 +220,9 @@ def match():
         "image1": os.path.splitext(st.session_state.image_list1[st.session_state.img1])[0].split("-")[-1],
         "image2": os.path.splitext(st.session_state.image_list2[st.session_state.img2])[0].split("-")[-1],
     })
+
+    database.create_table("checkpoint")
+    database.insert_data("checkpoint")
     
     if len(st.session_state.image_list1) > 0:
         current_image = st.session_state.image_list1[st.session_state.img1]
@@ -233,3 +242,16 @@ def save():
         st.error("Save path is invalid!")
     except Exception:
         st.error("Please check your save path!")
+
+def resume():
+    checkpoint_exist = database.check_table_exist("checkpoint")
+
+    if not checkpoint_exist:
+        st.error("You do not have any recent checkpoint to resume from.")
+        return
+
+    filepath1 = database.select_data("comparison", "checkpoint", "filepath1")
+    filepath2 = database.select_data("comparison", "checkpoint", "filepath2")
+    
+    st.session_state.image_list1 = [data["filepath1"] for data in filepath1]
+    st.session_state.image_list2 = [data["filepath2"] for data in filepath2]
