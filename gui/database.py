@@ -99,3 +99,12 @@ def check_table_exist(table):
     conn.close()
 
     return exist
+
+def drop_table(table):
+    conn = sqlite3.connect("gui/reid.db")
+    cursor = conn.cursor()
+
+    cursor.execute(f"DROP TABLE IF EXISTS {table};")
+
+    conn.commit()
+    conn.close()

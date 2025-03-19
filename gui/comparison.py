@@ -250,8 +250,18 @@ def resume():
         st.error("You do not have any recent checkpoint to resume from.")
         return
 
+    start_comparison()
     filepath1 = database.select_data("comparison", "checkpoint", "filepath1")
     filepath2 = database.select_data("comparison", "checkpoint", "filepath2")
-    
     st.session_state.image_list1 = [data["filepath1"] for data in filepath1]
     st.session_state.image_list2 = [data["filepath2"] for data in filepath2]
+
+def reset():
+    checkpoint_exist = database.check_table_exist("checkpoint")
+
+    if not checkpoint_exist:
+        st.error("No checkpoint found.")
+        return
+    
+    database.drop_table("checkpoint")
+    st.success("Checkpoint successfully deleted.")

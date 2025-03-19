@@ -102,6 +102,7 @@ if task_type == "Compare Images":
 
         if os.path.isfile("gui/reid.db"):
             st.button("Resume from checkpoint", use_container_width=True, on_click=comparison.resume)
+            st.button("Delete checkpoint", use_container_width=True, on_click=comparison.reset)
         
     st.sidebar.button("Run", type="primary", use_container_width=True, on_click=comparison.start_comparison)
     
