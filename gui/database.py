@@ -76,18 +76,10 @@ def insert_data(table, data=None):
     conn.commit()
     conn.close()
 
-def select_data(table_more, table_less, column_name):
+def compare_data(table_more, table_less, column_name):
     conn = sqlite3.connect("gui/reid.db")
     conn.row_factory = sqlite3.Row # access data by column name
     cursor = conn.cursor()
-
-    # query = f"SELECT image1, image2 FROM {table}"
-
-    # cursor.execute(query)
-    # results = cursor.fetchall()
-
-    # for row in results:
-    #     st.write(row)
 
     query = f"""
         SELECT * FROM {table_more}
@@ -97,7 +89,20 @@ def select_data(table_more, table_less, column_name):
     cursor.execute(query)
     results = cursor.fetchall()
 
-    conn.commit()
+    conn.close()
+
+    return results
+
+def select_data(table, column_name):
+    conn = sqlite3.connect("gui/reid.db")
+    conn.row_factory = sqlite3.Row # access data by column name
+    cursor = conn.cursor()
+
+    query = f"SELECT {column_name} FROM {table}"
+
+    cursor.execute(query)
+    results = cursor.fetchall()
+
     conn.close()
 
     return results

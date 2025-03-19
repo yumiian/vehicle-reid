@@ -255,8 +255,8 @@ def resume():
         return
 
     start_comparison()
-    filepath1 = database.select_data("comparison", "checkpoint", "filepath1")
-    filepath2 = database.select_data("comparison", "checkpoint", "filepath2")
+    filepath1 = database.compare_data("comparison", "checkpoint", "filepath1")
+    filepath2 = database.compare_data("comparison", "checkpoint", "filepath2")
     st.session_state.image_list1 = [data["filepath1"] for data in filepath1]
     st.session_state.image_list2 = [data["filepath2"] for data in filepath2]
 
