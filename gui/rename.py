@@ -18,17 +18,17 @@ def batch_rename(input_dir, output_dir, old, new):
         new_filepath = os.path.join(output_dir, new_filename)
         shutil.copy(old_filepath, new_filepath)
 
-def read_result_file(result_file):
-    imgs1 = []
-    imgs2 = []
+# def read_result_file(result_file):
+#     imgs1 = []
+#     imgs2 = []
     
-    with open(result_file, 'r') as f:
-        for line in f:
-            imgs = line.split()
-            imgs1.append(imgs[0])
-            imgs2.append(imgs[1])
+#     with open(result_file, 'r') as f:
+#         for line in f:
+#             imgs = line.split()
+#             imgs1.append(imgs[0])
+#             imgs2.append(imgs[1])
 
-    return (imgs1, imgs2)
+#     return (imgs1, imgs2)
 
 def rename_files(dir1, dir2, output_dir1, output_dir2):
     # ids1, ids2 = read_result_file(result_file)

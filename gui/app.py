@@ -89,16 +89,16 @@ if task_type == "Compare Images":
         st.session_state.crop_dir1 = st.text_input("First Crop Directory Path", value="gui/results/result/crops", key="crop_dir1_input")
         st.session_state.crop_dir2 = st.text_input("Second Crop Directory Path", value="gui/results/result2/crops", key="crop_dir2_input")
 
-        save_result = st.checkbox("Save results", value=False)
-        if save_result:
-            st.session_state.save_result_path = st.text_input("Save path here", value="gui/results.txt", key="save_path")
-            st.button("Save result", use_container_width=True, on_click=comparison.save)
+        # save_result = st.checkbox("Save results", value=False)
+        # if save_result:
+        #     st.session_state.save_result_path = st.text_input("Save path here", value="gui/results.txt", key="save_path")
+        st.button("Save result", use_container_width=True, on_click=comparison.save)
 
-        show_result = st.checkbox("Show results", value=False)
-        if show_result:
-            st.session_state.is_reviewing = True
-        else:
-            st.session_state.is_reviewing = False
+        # show_result = st.checkbox("Show results", value=False)
+        # if show_result:
+        #     st.session_state.is_reviewing = True
+        # else:
+        #     st.session_state.is_reviewing = False
 
         if os.path.isfile("gui/reid.db"):
             st.button("Resume from checkpoint", use_container_width=True, on_click=comparison.resume)
@@ -141,9 +141,9 @@ if task_type == "Compare Images":
         else:
             st.write("Done comparison! Please save your results :)")
 
-    if st.session_state.is_reviewing:
-        df = pd.DataFrame(st.session_state.results)
-        st.dataframe(df)
+    # if st.session_state.is_reviewing:
+    #     df = pd.DataFrame(st.session_state.results)
+    #     st.dataframe(df)
 
 ########################
 
@@ -151,7 +151,7 @@ if task_type == "Batch Rename":
     with st.sidebar.container(border=True):
         crop_dir1 = st.text_input("First Crop Directory Path", value="gui/results/result/crops", key="crop_dir1_input")
         crop_dir2 = st.text_input("Second Crop Directory Path", value="gui/results/result2/crops", key="crop_dir2_input")
-        save_result_path = st.text_input("Result Save File Path", value="gui/results.txt", key="save_path")
+        # save_result_path = st.text_input("Result Save File Path", value="gui/results.txt", key="save_path")
     
     run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
     if run_button:
