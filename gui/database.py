@@ -27,6 +27,17 @@ def create_table(table):
                 filepath2 TEXT NOT NULL
                 )
         """
+    elif table == "saved":
+        # drop the table if it exists
+        cursor.execute(f"DROP TABLE IF EXISTS {table};")
+
+        query = f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                image1 CHAR(6) NOT NULL,
+                image2 CHAR(6) NOT NULL
+                )
+        """
     else:
         raise ValueError("Invalid table name.")
 
@@ -97,7 +108,7 @@ def check_table_exist(table):
 
     cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}';")
     exist = cursor.fetchone()
-    
+
     conn.close()
 
     return exist
@@ -107,6 +118,20 @@ def drop_table(table):
     cursor = conn.cursor()
 
     cursor.execute(f"DROP TABLE IF EXISTS {table};")
+
+    conn.commit()
+    conn.close()
+
+def copy_table(source_table, dest_table, data):
+    conn = sqlite3.connect("gui/reid.db")
+    cursor = conn.cursor()
+
+    # cursor.execute(f"CREATE TABLE {dest_table} AS SELECT * FROM {source_table}")
+
+    cursor.execute(f'''
+        INSERT INTO {dest_table} ({data})
+        SELECT {data} FROM {source_table}
+    ''')
 
     conn.commit()
     conn.close()

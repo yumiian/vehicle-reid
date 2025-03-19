@@ -234,14 +234,18 @@ def match():
         st.session_state.image_list2.remove(current_image)
         st.session_state.img2 = min(st.session_state.img2, len(st.session_state.image_list2) - 1) 
 
+# def save():
+#     try:
+#         save_results(st.session_state.save_result_path, st.session_state.results, mode='w')
+#         st.success(f"Result file successfully saved to {st.session_state.save_result_path}")
+#     except (FileNotFoundError, PermissionError):
+#         st.error("Save path is invalid!")
+#     except Exception:
+#         st.error("Please check your save path!")
+
 def save():
-    try:
-        save_results(st.session_state.save_result_path, st.session_state.results, mode='w')
-        st.success(f"Result file successfully saved to {st.session_state.save_result_path}")
-    except (FileNotFoundError, PermissionError):
-        st.error("Save path is invalid!")
-    except Exception:
-        st.error("Please check your save path!")
+    database.create_table("saved")
+    database.copy_table("checkpoint", "saved", "id, image1, image2")
 
 def resume():
     checkpoint_exist = database.check_table_exist("checkpoint")
