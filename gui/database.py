@@ -94,8 +94,10 @@ def select_data(table_more, table_less, column_name):
 def check_table_exist(table):
     conn = sqlite3.connect("gui/reid.db")
     cursor = conn.cursor()
+
     cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}';")
     exist = cursor.fetchone()
+    
     conn.close()
 
     return exist
