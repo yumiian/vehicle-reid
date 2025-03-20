@@ -81,7 +81,7 @@ if task_type == "Create Crops":
     
     if run_button:
         with st.spinner("Running..."):
-            new_output_dir = helper.create_subfolders(output_dir, "result")
+            new_output_dir = helper.create_subfolders(output_dir, "output")
             yolo_crop.track(model_path, video_path, new_output_dir, conf=confidence, save_frames=True, save_txt=True, prefix=prefix)
             yolo_crop.save_crop(new_output_dir)
         st.success("Done!")
@@ -97,8 +97,8 @@ if task_type == "Compare Images":
     comparison.initialize_session_state()
 
     with st.sidebar.container(border=True):
-        st.session_state.crop_dir1 = st.text_input("First Crop Directory Path", value="gui/results/result/crops", key="crop_dir1_input")
-        st.session_state.crop_dir2 = st.text_input("Second Crop Directory Path", value="gui/results/result2/crops", key="crop_dir2_input")
+        st.session_state.crop_dir1 = st.text_input("First Crop Directory Path", value="gui/output/output/crops", key="crop_dir1_input")
+        st.session_state.crop_dir2 = st.text_input("Second Crop Directory Path", value="gui/output/output2/crops", key="crop_dir2_input")
 
         if os.path.isfile(db_path):
             st.button("Save progress", use_container_width=True, on_click=comparison.save)
