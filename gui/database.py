@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import time
 import streamlit as st
 
 def create_table(table):
@@ -23,8 +24,8 @@ def create_table(table):
         query = f"""
             CREATE TABLE IF NOT EXISTS {table} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                filepath1 TEXT NOT NULL,
-                filepath2 TEXT NOT NULL
+                filepath1 TEXT,
+                filepath2 TEXT
                 )
         """
     elif table == "saved":
@@ -46,16 +47,9 @@ def create_table(table):
     conn.commit()
     conn.close()
 
-def insert_data(table, data=None):
+def insert_data(table, data1=None, data2=None):
     conn = sqlite3.connect("gui/reid.db")
     cursor = conn.cursor()
-
-    # if overwrite:
-    #     # clear the table if it is not empty
-    #     cursor.execute(f"SELECT COUNT(*) FROM {table};")
-    #     row_count = cursor.fetchone()[0]
-    #     if row_count > 0:
-    #         cursor.execute(f"DELETE FROM {table};")
 
     if table == "checkpoint":
         query = f"INSERT INTO {table} (image1, image2, filepath1, filepath2) VALUES (?, ?, ?, ?)"
@@ -67,9 +61,13 @@ def insert_data(table, data=None):
 
         cursor.execute(query, (image1, image2, filepath1, filepath2))
     elif table == "comparison":
-        query = f"INSERT INTO {table} (filepath1, filepath2) VALUES (?, ?)"
+        max_length = max(len(data1), len(data2))
+        # Extend the shorter list with None values
+        data1.extend([None] * (max_length - len(data1)))
+        data2.extend([None] * (max_length - len(data2)))
 
-        cursor.executemany(query, data)
+        query = f"INSERT INTO {table} (filepath1, filepath2) VALUES (?, ?)"
+        cursor.executemany(query, zip(data1, data2))
     else:
         raise ValueError("Invalid table name.")
 
@@ -117,6 +115,20 @@ def check_table_exist(table):
 
     return exist
 
+def check_table_empty(table):
+    conn = sqlite3.connect("gui/reid.db")
+    cursor = conn.cursor()
+    
+    cursor.execute(f"SELECT COUNT(*) FROM {table};")
+    row_count = cursor.fetchone()[0]
+
+    conn.close()
+
+    if row_count == 0:
+        return True
+    
+    return False
+    
 def drop_table(table):
     conn = sqlite3.connect("gui/reid.db")
     cursor = conn.cursor()
@@ -139,3 +151,22 @@ def copy_table(source_table, dest_table, data):
 
     conn.commit()
     conn.close()
+
+@st.dialog("Confirm delete database?")
+def dialog_delete_db():
+    input = st.text_input('Are you sure you want to delete the database? Type "YES" to confirm.')
+    if st.button("Submit"):
+        if input != "YES":
+            st.error("Invalid input!")
+            return
+        
+        if os.path.exists("gui/reid.db"):
+            os.remove("gui/reid.db")
+        else:
+            st.error("Database file not found or has already been deleted!")
+            return
+
+        st.success("Database successfully deleted.")
+        st.write("Auto close in 3 seconds...")
+        time.sleep(3)
+        st.rerun()

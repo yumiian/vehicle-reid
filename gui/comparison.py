@@ -177,9 +177,11 @@ def start_comparison():
         st.session_state.image_list1 = filter_files(crop_files1)
         st.session_state.image_list2 = filter_files(crop_files2)
 
-        datalist = zip(st.session_state.image_list1, st.session_state.image_list2)
+        # create copy to prevent modify original image_list with NULL values
+        datalist1 = st.session_state.image_list1.copy()
+        datalist2 = st.session_state.image_list2.copy()
         database.create_table("comparison")
-        database.insert_data("comparison", datalist)
+        database.insert_data("comparison", datalist1, datalist2)
 
         st.session_state.is_running = True
     except FileNotFoundError:
@@ -216,10 +218,10 @@ def del2():
         st.session_state.img2 = min(st.session_state.img2, len(st.session_state.image_list2) - 1) 
 
 def match():
-    st.session_state.results.append({
-        "image1": os.path.splitext(st.session_state.image_list1[st.session_state.img1])[0].split("-")[-1],
-        "image2": os.path.splitext(st.session_state.image_list2[st.session_state.img2])[0].split("-")[-1],
-    })
+    # st.session_state.results.append({
+    #     "image1": os.path.splitext(st.session_state.image_list1[st.session_state.img1])[0].split("-")[-1],
+    #     "image2": os.path.splitext(st.session_state.image_list2[st.session_state.img2])[0].split("-")[-1],
+    # })
 
     database.create_table("checkpoint")
     database.insert_data("checkpoint")
@@ -244,15 +246,19 @@ def match():
 #         st.error("Please check your save path!")
 
 def save():
+    if not database.check_table_exist("checkpoint"):
+        st.error("No progress to be saved.")
+        return False 
+
     database.create_table("saved")
     database.copy_table("checkpoint", "saved", "id, image1, image2")
-    st.success("Results saved.")
+    st.success("Progress saved.")
+
+    return True
 
 def resume():
-    checkpoint_exist = database.check_table_exist("checkpoint")
-
-    if not checkpoint_exist:
-        st.error("You do not have any recent checkpoint to resume from.")
+    if not database.check_table_exist("checkpoint"):
+        st.error("No recent checkpoint to resume from.")
         return
 
     start_comparison()
@@ -260,11 +266,10 @@ def resume():
     filepath2 = database.compare_data("comparison", "checkpoint", "filepath2")
     st.session_state.image_list1 = [data["filepath1"] for data in filepath1]
     st.session_state.image_list2 = [data["filepath2"] for data in filepath2]
+    st.success("Checkpoint resumed.")
 
 def reset():
-    checkpoint_exist = database.check_table_exist("checkpoint")
-
-    if not checkpoint_exist:
+    if not database.check_table_exist("checkpoint"):
         st.error("No checkpoint found.")
         return
     

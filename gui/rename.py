@@ -32,6 +32,13 @@ def batch_rename(input_dir, output_dir, old, new):
 
 def rename_files(dir1, dir2, output_dir1, output_dir2):
     # ids1, ids2 = read_result_file(result_file)
+    # if not database.check_table_exist("saved"):
+    #     st.error("Table does not exist!")
+    #     return
+    
+    # if database.check_table_empty("saved"):
+    #     st.error("No results to be saved!")
+    #     return
 
     image1 = database.select_data("saved", "image1")
     image2 = database.select_data("saved", "image2")

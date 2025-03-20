@@ -12,6 +12,7 @@ import datasplit
 import reid
 import visualization
 import prepare_VeRi
+import database
 
 model_path = Path(settings.YOLO_MODEL)
 video_dir = Path(settings.VIDEO_DIR)
@@ -32,8 +33,13 @@ st.set_page_config(
 
 st.sidebar.header("Tasks Selection")
 with st.sidebar.container(border=True):
-    task_type = st.radio("Tasks Selection", options=["Create Crops", "Compare Images", "Batch Rename", "Dataset Split", 
-                                "Model Training", "Model Testing", "Visualization"], label_visibility="collapsed")
+    if "task_option" not in st.session_state:
+        st.session_state.task_option = ["Create Crops", "Compare Images", "Dataset Split", "Model Training", "Model Testing", "Visualization"]
+    if "database_added" not in st.session_state:
+        if os.path.isfile("gui/reid.db"):
+            st.session_state.task_option.append("Database")
+        st.session_state.database_added = True
+    task_type = st.radio("Tasks Selection", options=st.session_state.task_option, label_visibility="collapsed")
 
 ########################
 
@@ -92,7 +98,6 @@ if task_type == "Compare Images":
         # save_result = st.checkbox("Save results", value=False)
         # if save_result:
         #     st.session_state.save_result_path = st.text_input("Save path here", value="gui/results.txt", key="save_path")
-        st.button("Save result", use_container_width=True, on_click=comparison.save)
 
         # show_result = st.checkbox("Show results", value=False)
         # if show_result:
@@ -101,10 +106,21 @@ if task_type == "Compare Images":
         #     st.session_state.is_reviewing = False
 
         if os.path.isfile("gui/reid.db"):
+            st.button("Save progress", use_container_width=True, on_click=comparison.save)
             st.button("Resume from checkpoint", use_container_width=True, on_click=comparison.resume)
             st.button("Delete checkpoint", use_container_width=True, on_click=comparison.reset)
         
     st.sidebar.button("Run", type="primary", use_container_width=True, on_click=comparison.start_comparison)
+
+    if os.path.isfile("gui/reid.db"):
+        save_button = st.sidebar.button("Save results", type="primary", use_container_width=True)
+        if save_button:
+            with st.spinner("Running..."):
+                if comparison.save():
+                    new_crop_dir1 = helper.create_subfolders(crops_dir, "crop")
+                    new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
+                    rename.rename_files(st.session_state.crop_dir1, st.session_state.crop_dir2, new_crop_dir1, new_crop_dir2)
+                    st.success(f'Results successfully saved to "{new_crop_dir1}" and "{new_crop_dir2}".')
     
     # Only show comparison interface if running
     if st.session_state.is_running:
@@ -139,7 +155,7 @@ if task_type == "Compare Images":
             # Action buttons
             st.button("Match found", type="primary", use_container_width=True, disabled=st.session_state.bmatch_disabled, on_click=comparison.match)
         else:
-            st.write("Done comparison! Please save your results :)")
+            st.success("Comparison completed! Remember to save your results :)")
 
     # if st.session_state.is_reviewing:
     #     df = pd.DataFrame(st.session_state.results)
@@ -147,19 +163,19 @@ if task_type == "Compare Images":
 
 ########################
 
-if task_type == "Batch Rename":
-    with st.sidebar.container(border=True):
-        crop_dir1 = st.text_input("First Crop Directory Path", value="gui/results/result/crops", key="crop_dir1_input")
-        crop_dir2 = st.text_input("Second Crop Directory Path", value="gui/results/result2/crops", key="crop_dir2_input")
-        # save_result_path = st.text_input("Result Save File Path", value="gui/results.txt", key="save_path")
+# if task_type == "Batch Rename":
+#     with st.sidebar.container(border=True):
+#         crop_dir1 = st.text_input("First Crop Directory Path", value="gui/results/result/crops", key="crop_dir1_input")
+#         crop_dir2 = st.text_input("Second Crop Directory Path", value="gui/results/result2/crops", key="crop_dir2_input")
+#         # save_result_path = st.text_input("Result Save File Path", value="gui/results.txt", key="save_path")
     
-    run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
-    if run_button:
-        with st.spinner("Running..."):
-            new_crop_dir1 = helper.create_subfolders(crops_dir, "crop")
-            new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
-            rename.rename_files(crop_dir1, crop_dir2, new_crop_dir1, new_crop_dir2)
-        st.success("Done!")
+#     run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
+#     if run_button:
+#         with st.spinner("Running..."):
+#             new_crop_dir1 = helper.create_subfolders(crops_dir, "crop")
+#             new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
+#             rename.rename_files(crop_dir1, crop_dir2, new_crop_dir1, new_crop_dir2)
+#         st.success("Done!")
 
 ########################
 
@@ -379,3 +395,9 @@ if task_type == "Visualization":
                                                 checkpoint=checkpoint, batchsize=batchsize, input_size=input_size, num_images=num_images, 
                                                 imgs_per_row=imgs_per_row, use_saved_mat=use_saved_mat, curr_idx=curr_idx)
                 st.pyplot(fig)
+
+########################
+
+if task_type == "Database":
+    with st.sidebar.container(border=True):
+        st.button("Delete database", type="primary", use_container_width=True, on_click=database.dialog_delete_db)
