@@ -3,6 +3,8 @@ import cv2
 import os
 import shutil
 
+import database
+
 def create_txt(image_path, output_path, filename):
     with open(os.path.join(output_path, filename), "w") as f:
         for filename in os.listdir(image_path):
@@ -87,8 +89,13 @@ def crop_labels(image_path, label_path, output_path):
         cropped = image[ymin:ymax, xmin:xmax]
         filename_noext = os.path.splitext(os.path.basename(image_path))[0]
 
-        output_filename = os.path.join(output_path, filename_noext + f"-{int(id):06d}.jpg")
+        label_id = f"{int(id):06d}"
+        output_filename = os.path.join(output_path, f"{filename_noext}-{label_id}.jpg")
         cv2.imwrite(output_filename, cropped)
+
+        # database
+        database.create_table("crop_image")
+        database.insert_data("crop_image", label_id) 
 
 def cleanup(save_path):
     main_folder = ["images", "labels", "crops", "crops.txt"]
@@ -156,7 +163,10 @@ def save_crop(save_path):
         if not os.path.exists(image_file):
             continue
 
+        # database
+        database.create_table("image")
+        database.insert_data("image", os.path.splitext(file)[0].split("-")[-1].split("_")[-1]) # frame_000000 -> 000000
+
         crop_labels(image_file, label_file, crop_path)
 
     create_txt(crop_path, os.path.dirname(crop_path), "crops.txt")
-

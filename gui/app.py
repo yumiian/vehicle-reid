@@ -53,22 +53,39 @@ if task_type == "Create Crops":
     with st.sidebar.container(border=True):
         confidence = float(st.slider("Model Confidence Level", 25, 100, 80)) / 100
 
+        if "location" not in st.session_state:
+            st.session_state.location = None
+        if "camera_id" not in st.session_state:
+            st.session_state.camera_id = None
+        if "time" not in st.session_state:
+            st.session_state.time = None
+
         uploaded_video = st.file_uploader("Select video file", type=['mp4'])
-        location = st.selectbox("Location", options=["KJ", "SJ", "Custom"])
-        if location == "Custom":
-            location = st.text_input("Custom Location")
+        st.session_state.location = st.selectbox("Location", options=["KJ", "SJ", "Custom"])
+        if st.session_state.location == "Custom":
+            st.session_state.location = st.text_input("Custom Location", placeholder="Max characters: 6")
+            # Validate input length
+            if st.session_state.location and len(st.session_state.location) > 6:
+                st.warning("Maximum 6 characters only!")
+                st.session_state.location = st.session_state.location[:6]  # automatically truncate the input
 
-        camera = st.selectbox("Camera ID", options=["C1", "C2", "C3", "C4", "Custom"])
-        if camera == "Custom":
-            camera = st.text_input("Custom Camera ID")
+        st.session_state.camera_id = st.selectbox("Camera ID", options=["C1", "C2", "C3", "C4", "Custom"])
+        if st.session_state.camera_id == "Custom":
+            st.session_state.camera_id = st.text_input("Custom Camera ID", placeholder="Max characters: 6")
+            if st.session_state.camera_id and len(st.session_state.camera_id) > 6:
+                st.warning("Maximum 6 characters only!")
+                st.session_state.camera_id = st.session_state.camera_id[:6]
 
-        time = st.selectbox("Time", options=["8AM", "11AM", "3PM", "8PM", "Custom"])
-        if time == "Custom":
-            time = st.text_input("Custom Time")
+        st.session_state.time = st.selectbox("Time", options=["8AM", "11AM", "3PM", "8PM", "Custom"])
+        if st.session_state.time == "Custom":
+            st.session_state.time = st.text_input("Custom Time", placeholder="Max characters: 6")
+            if st.session_state.time and len(st.session_state.time) > 6:
+                st.warning("Maximum 6 characters only!")
+                st.session_state.time = st.session_state.time[:6]
 
-        prefix = f"{location}-{camera}-{time}"
+        prefix = f"{st.session_state.location}-{st.session_state.camera_id}-{st.session_state.time}"
         
-    if (uploaded_video is not None) and (all(x != "" for x in [location, camera, time])):
+    if (uploaded_video is not None) and (all(x != "" for x in [st.session_state.location, st.session_state.camera_id, st.session_state.time])):
         st.header("Video Preview")
         st.video(uploaded_video)
 
@@ -81,10 +98,14 @@ if task_type == "Create Crops":
     
     if run_button:
         with st.spinner("Running..."):
+            database.create_table("video")
+            database.insert_data("video")
+
             new_output_dir = helper.create_subfolders(output_dir, "output")
             yolo_crop.track(model_path, video_path, new_output_dir, conf=confidence, save_frames=True, save_txt=True, prefix=prefix)
             yolo_crop.save_crop(new_output_dir)
-        st.success("Done!")
+
+        st.success(f'Done! Output files saved to "{new_output_dir}"')
         
     cancel_button = st.sidebar.button("Cancel", use_container_width=True)
     if cancel_button:
@@ -385,4 +406,4 @@ if task_type == "Database":
     if table_selected:
         st.subheader(f'"{table_selected}" table')
         df = database.db_to_df(table_selected)
-        st.dataframe(df)
+        st.dataframe(df, use_container_width=True, height=35*len(df)+38) # show all rows

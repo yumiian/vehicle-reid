@@ -13,6 +13,8 @@ def create_table(table):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
+    cursor.execute("PRAGMA foreign_keys = ON;")
+
     if table == "checkpoint":
         query = f"""
             CREATE TABLE IF NOT EXISTS {table} (
@@ -45,6 +47,33 @@ def create_table(table):
                 image2 CHAR(6) NOT NULL
                 )
         """
+    elif table == "video":
+        query = f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                video_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                location VARCHAR(6) NOT NULL,
+                camera_id VARCHAR(6) NOT NULL,
+                time VARCHAR(6) NOT NULL
+                )
+        """
+    elif table == "image":
+        query = f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                image_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                video_id INTEGER NOT NULL,
+                frame_id CHAR(6) NOT NULL,
+                FOREIGN KEY (video_id) REFERENCES video(video_id) ON DELETE CASCADE
+                )
+        """
+    elif table == "crop_image":
+        query = f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                crop_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                image_id INTEGER NOT NULL,
+                label_id CHAR(6) NOT NULL,
+                FOREIGN KEY (image_id) REFERENCES image(image_id) ON DELETE CASCADE
+                )
+        """
     else:
         raise ValueError("Invalid table name.")
 
@@ -66,14 +95,33 @@ def insert_data(table, data1=None, data2=None):
         filepath2 = st.session_state.image_list2[st.session_state.img2]
 
         cursor.execute(query, (image1, image2, filepath1, filepath2))
+
     elif table == "comparison":
+        query = f"INSERT INTO {table} (filepath1, filepath2) VALUES (?, ?)"
         max_length = max(len(data1), len(data2))
         # Extend the shorter list with None values
         data1.extend([None] * (max_length - len(data1)))
         data2.extend([None] * (max_length - len(data2)))
 
-        query = f"INSERT INTO {table} (filepath1, filepath2) VALUES (?, ?)"
         cursor.executemany(query, zip(data1, data2))
+
+    elif table == "video":
+        query = f"INSERT INTO {table} (location, camera_id, time) VALUES (?, ?, ?)"
+
+        cursor.execute(query, (st.session_state.location, st.session_state.camera_id, st.session_state.time))
+        st.session_state.video_id = cursor.lastrowid
+
+    elif table == "image":
+        query = f"INSERT INTO {table} (video_id, frame_id) VALUES (?, ?)"
+
+        cursor.execute(query, (st.session_state.video_id, data1))
+        st.session_state.image_id = cursor.lastrowid
+
+    elif table == "crop_image":
+        query = f"INSERT INTO {table} (image_id, label_id) VALUES (?, ?)"
+
+        cursor.execute(query, (st.session_state.image_id, data1))
+        
     else:
         raise ValueError("Invalid table name.")
 
@@ -193,7 +241,7 @@ def dialog_delete_db():
             st.error("Database file not found or has already been deleted!")
             return
 
-        st.success("Database successfully deleted.")
-        st.write("Auto close in 3 seconds...")
-        time.sleep(3)
-        st.rerun()
+        st.success("Database successfully deleted. Please refresh the page.")
+        # st.write("Auto close in 3 seconds...")
+        # time.sleep(3)
+        # st.rerun()
