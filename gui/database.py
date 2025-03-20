@@ -1,10 +1,15 @@
 import sqlite3
 import os
+from pathlib import Path
 import time
 import streamlit as st
 
+import settings
+
+db_path = Path(settings.DATABASE_PATH)
+
 def create_table(table):
-    conn = sqlite3.connect("gui/reid.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     if table == "checkpoint":
@@ -48,7 +53,7 @@ def create_table(table):
     conn.close()
 
 def insert_data(table, data1=None, data2=None):
-    conn = sqlite3.connect("gui/reid.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     if table == "checkpoint":
@@ -75,7 +80,7 @@ def insert_data(table, data1=None, data2=None):
     conn.close()
 
 def compare_data(table_more, table_less, column_name):
-    conn = sqlite3.connect("gui/reid.db")
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row # access data by column name
     cursor = conn.cursor()
 
@@ -92,7 +97,7 @@ def compare_data(table_more, table_less, column_name):
     return results
 
 def select_data(table, column_name):
-    conn = sqlite3.connect("gui/reid.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     query = f"SELECT {column_name} FROM {table}"
@@ -105,7 +110,7 @@ def select_data(table, column_name):
     return results
 
 def check_table_exist(table):
-    conn = sqlite3.connect("gui/reid.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}';")
@@ -116,7 +121,7 @@ def check_table_exist(table):
     return exist
 
 def check_table_empty(table):
-    conn = sqlite3.connect("gui/reid.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     
     cursor.execute(f"SELECT COUNT(*) FROM {table};")
@@ -130,7 +135,7 @@ def check_table_empty(table):
     return False
     
 def drop_table(table):
-    conn = sqlite3.connect("gui/reid.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     cursor.execute(f"DROP TABLE IF EXISTS {table};")
@@ -139,7 +144,7 @@ def drop_table(table):
     conn.close()
 
 def copy_table(source_table, dest_table, data):
-    conn = sqlite3.connect("gui/reid.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     # cursor.execute(f"CREATE TABLE {dest_table} AS SELECT * FROM {source_table}")
@@ -160,8 +165,8 @@ def dialog_delete_db():
             st.error("Invalid input!")
             return
         
-        if os.path.exists("gui/reid.db"):
-            os.remove("gui/reid.db")
+        if os.path.exists(db_path):
+            os.remove(db_path)
         else:
             st.error("Database file not found or has already been deleted!")
             return

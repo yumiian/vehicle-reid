@@ -20,6 +20,7 @@ video_path = Path(settings.VIDEO_FILE)
 save_path = Path(settings.OUTPUT_DIR)
 crops_dir = Path(settings.CROPS_DIR)
 datasets_dir = Path(settings.DATASETS_DIR)
+db_path = Path(settings.DATABASE_PATH)
 
 # remove the video files after task completed to save storage
 helper.cleanup(video_dir)
@@ -36,7 +37,7 @@ with st.sidebar.container(border=True):
     if "task_option" not in st.session_state:
         st.session_state.task_option = ["Create Crops", "Compare Images", "Dataset Split", "Model Training", "Model Testing", "Visualization"]
     if "database_added" not in st.session_state:
-        if os.path.isfile("gui/reid.db"):
+        if os.path.isfile(db_path):
             st.session_state.task_option.append("Database")
         st.session_state.database_added = True
     task_type = st.radio("Tasks Selection", options=st.session_state.task_option, label_visibility="collapsed")
@@ -95,14 +96,14 @@ if task_type == "Compare Images":
         st.session_state.crop_dir1 = st.text_input("First Crop Directory Path", value="gui/results/result/crops", key="crop_dir1_input")
         st.session_state.crop_dir2 = st.text_input("Second Crop Directory Path", value="gui/results/result2/crops", key="crop_dir2_input")
 
-        if os.path.isfile("gui/reid.db"):
+        if os.path.isfile(db_path):
             st.button("Save progress", use_container_width=True, on_click=comparison.save)
             st.button("Resume from checkpoint", use_container_width=True, on_click=comparison.resume)
             st.button("Delete checkpoint", use_container_width=True, on_click=comparison.reset)
         
     st.sidebar.button("Run", type="primary", use_container_width=True, on_click=comparison.start_comparison)
 
-    if os.path.isfile("gui/reid.db"):
+    if os.path.isfile(db_path):
         save_button = st.sidebar.button("Save results", type="primary", use_container_width=True)
         if save_button:
             with st.spinner("Running..."):

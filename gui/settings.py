@@ -23,3 +23,5 @@ VIDEO_FILE = VIDEO_DIR / 'video.mp4'
 OUTPUT_DIR = ROOT / 'results'
 CROPS_DIR = ROOT / 'crops'
 DATASETS_DIR = ROOT / "datasets"
+
+DATABASE_PATH = ROOT / 'reid.db'
