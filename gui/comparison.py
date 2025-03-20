@@ -218,11 +218,6 @@ def del2():
         st.session_state.img2 = min(st.session_state.img2, len(st.session_state.image_list2) - 1) 
 
 def match():
-    # st.session_state.results.append({
-    #     "image1": os.path.splitext(st.session_state.image_list1[st.session_state.img1])[0].split("-")[-1],
-    #     "image2": os.path.splitext(st.session_state.image_list2[st.session_state.img2])[0].split("-")[-1],
-    # })
-
     database.create_table("checkpoint")
     database.insert_data("checkpoint")
     
@@ -235,15 +230,6 @@ def match():
         current_image = st.session_state.image_list2[st.session_state.img2]
         st.session_state.image_list2.remove(current_image)
         st.session_state.img2 = min(st.session_state.img2, len(st.session_state.image_list2) - 1) 
-
-# def save():
-#     try:
-#         save_results(st.session_state.save_result_path, st.session_state.results, mode='w')
-#         st.success(f"Result file successfully saved to {st.session_state.save_result_path}")
-#     except (FileNotFoundError, PermissionError):
-#         st.error("Save path is invalid!")
-#     except Exception:
-#         st.error("Please check your save path!")
 
 def save():
     if not database.check_table_exist("checkpoint"):
