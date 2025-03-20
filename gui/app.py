@@ -14,13 +14,17 @@ import visualization
 import prepare_VeRi
 import database
 
-model_path = Path(settings.YOLO_MODEL)
+# initialize path and directories
+model_path = Path(settings.YOLO_MODEL_FILEPATH)
+
 video_dir = Path(settings.VIDEO_DIR)
-video_path = Path(settings.VIDEO_FILE)
-save_path = Path(settings.OUTPUT_DIR)
+video_path = Path(settings.VIDEO_FILEPATH)
+
+output_dir = Path(settings.OUTPUT_DIR)
 crops_dir = Path(settings.CROPS_DIR)
 datasets_dir = Path(settings.DATASETS_DIR)
-db_path = Path(settings.DATABASE_PATH)
+
+db_path = Path(settings.DATABASE_FILEPATH)
 
 # remove the video files after task completed to save storage
 helper.cleanup(video_dir)
@@ -77,9 +81,9 @@ if task_type == "Create Crops":
     
     if run_button:
         with st.spinner("Running..."):
-            new_save_path = helper.create_subfolders(save_path, "result")
-            yolo_crop.track(model_path, video_path, new_save_path, conf=confidence, save_frames=True, save_txt=True, prefix=prefix)
-            yolo_crop.save_crop(new_save_path)
+            new_output_dir = helper.create_subfolders(output_dir, "result")
+            yolo_crop.track(model_path, video_path, new_output_dir, conf=confidence, save_frames=True, save_txt=True, prefix=prefix)
+            yolo_crop.save_crop(new_output_dir)
         st.success("Done!")
         
     cancel_button = st.sidebar.button("Cancel", use_container_width=True)

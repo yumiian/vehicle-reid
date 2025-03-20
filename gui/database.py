@@ -6,7 +6,7 @@ import streamlit as st
 
 import settings
 
-db_path = Path(settings.DATABASE_PATH)
+db_path = Path(settings.DATABASE_FILEPATH)
 
 def create_table(table):
     conn = sqlite3.connect(db_path)

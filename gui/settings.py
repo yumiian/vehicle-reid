@@ -14,14 +14,18 @@ if root_path not in sys.path:
 # Get the relative path of the root directory with respect to the current working directory
 ROOT = root_path.relative_to(Path.cwd())
 
-MODEL_DIR = ROOT / 'models'
-YOLO_MODEL = MODEL_DIR / 'yolo11n.pt'
+# model
+MODEL_DIR = ROOT / "models"
+YOLO_MODEL_FILEPATH = MODEL_DIR / "yolo11n.pt"
 
-VIDEO_DIR = ROOT / 'videos'
-VIDEO_FILE = VIDEO_DIR / 'video.mp4'
+# input video
+VIDEO_DIR = ROOT / "videos"
+VIDEO_FILEPATH = VIDEO_DIR / "video.mp4"
 
-OUTPUT_DIR = ROOT / 'results'
-CROPS_DIR = ROOT / 'crops'
+# dataset 
+OUTPUT_DIR = ROOT / "output"
+CROPS_DIR = ROOT / "crops"
 DATASETS_DIR = ROOT / "datasets"
 
-DATABASE_PATH = ROOT / 'reid.db'
+# database
+DATABASE_FILEPATH = ROOT / "reid.db"
