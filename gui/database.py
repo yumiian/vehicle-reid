@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from pathlib import Path
+import pandas as pd
 import time
 import streamlit as st
 
@@ -156,6 +157,27 @@ def copy_table(source_table, dest_table, data):
 
     conn.commit()
     conn.close()
+
+def get_table_names():
+    conn = sqlite3.connect(db_path) 
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name != 'sqlite_sequence';")  
+    tables = [row[0] for row in cursor.fetchall()]
+
+    conn.close()
+    
+    return tables
+
+def db_to_df(table):
+    conn = sqlite3.connect(db_path)
+
+    df = pd.read_sql_query(f"SELECT * FROM {table}", conn)
+
+    conn.commit()
+    conn.close()
+
+    return df
 
 @st.dialog("Confirm delete database?")
 def dialog_delete_db():

@@ -375,4 +375,14 @@ if task_type == "Visualization":
 
 if task_type == "Database":
     with st.sidebar.container(border=True):
+        if "db_table" not in st.session_state:
+            st.session_state.db_table = database.get_table_names()
+        
+        table_selected = st.radio("View Database Table", options=st.session_state.db_table, label_visibility="visible")
+
         st.button("Delete database", type="primary", use_container_width=True, on_click=database.dialog_delete_db)
+
+    if table_selected:
+        st.subheader(f'"{table_selected}" table')
+        df = database.db_to_df(table_selected)
+        st.dataframe(df)
