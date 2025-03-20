@@ -13,3 +13,4 @@ gui/results/*
 *.pt
 *.pth
 *.mat
+*.db
