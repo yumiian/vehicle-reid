@@ -22,11 +22,11 @@ def create_table(table):
                 image1 CHAR(6) NOT NULL,
                 image2 CHAR(6) NOT NULL,
                 filepath1 TEXT NOT NULL,
-                filepath2 TEXT NOT NULL
+                filepath2 TEXT NOT NULL,
+                UNIQUE(image1, image2)
                 )
         """
     elif table == "comparison":
-        # drop the table if it exists
         cursor.execute(f"DROP TABLE IF EXISTS {table};")
 
         query = f"""
@@ -37,7 +37,6 @@ def create_table(table):
                 )
         """
     elif table == "saved":
-        # drop the table if it exists
         cursor.execute(f"DROP TABLE IF EXISTS {table};")
 
         query = f"""
@@ -87,7 +86,7 @@ def insert_data(table, data1=None, data2=None):
     cursor = conn.cursor()
 
     if table == "checkpoint":
-        query = f"INSERT INTO {table} (image1, image2, filepath1, filepath2) VALUES (?, ?, ?, ?)"
+        query = f"INSERT OR IGNORE INTO {table} (image1, image2, filepath1, filepath2) VALUES (?, ?, ?, ?)"
 
         image1 = os.path.splitext(st.session_state.image_list1[st.session_state.img1])[0].split("-")[-1]
         image2 = os.path.splitext(st.session_state.image_list2[st.session_state.img2])[0].split("-")[-1]
