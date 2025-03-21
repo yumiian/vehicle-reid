@@ -226,6 +226,13 @@ def db_to_df(table):
 
     return df
 
+def df_to_db(df, table):
+    conn = sqlite3.connect(db_path)
+
+    df.to_sql(name=table, con=conn, if_exists="replace", index=False)
+
+    conn.close()
+
 @st.dialog("Confirm delete database?")
 def dialog_delete_db():
     input = st.text_input('Are you sure you want to delete the database? Type "YES" to confirm.')

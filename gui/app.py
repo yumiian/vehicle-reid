@@ -42,7 +42,7 @@ with st.sidebar.container(border=True):
         st.session_state.task_option = ["Create Crops", "Compare Images", "Dataset Split", "Model Training", "Model Testing", "Visualization"]
     if "database_added" not in st.session_state:
         if os.path.isfile(db_path):
-            st.session_state.task_option.append("Database")
+            st.session_state.task_option.append("Database Management")
         st.session_state.database_added = True
     task_type = st.radio("Tasks Selection", options=st.session_state.task_option, label_visibility="collapsed")
 
@@ -404,16 +404,17 @@ if task_type == "Visualization":
 
 ########################
 
-if task_type == "Database":
+if task_type == "Database Management":
     with st.sidebar.container(border=True):
         if "db_table" not in st.session_state:
             st.session_state.db_table = database.get_table_names()
         
-        table_selected = st.radio("View Database Table", options=st.session_state.db_table, label_visibility="visible")
+        table_selected = st.radio("Edit Database Table", options=st.session_state.db_table, label_visibility="visible")
 
         st.button("Delete database", type="primary", use_container_width=True, on_click=database.dialog_delete_db)
 
     if table_selected:
         st.subheader(f'"{table_selected}" table')
-        df = database.db_to_df(table_selected)
-        st.dataframe(df, use_container_width=True, height=35*len(df)+38) # show all rows
+        df = database.db_to_df(table_selected) # convert database to dataframe
+        edited_df = st.data_editor(df, use_container_width=True, disabled=("id", "video_id", "image_id", "crop_id"), height=35*len(df)+38) # show all rows
+        database.df_to_db(edited_df, table_selected) # apply changes to database
