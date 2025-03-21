@@ -77,10 +77,10 @@ def compare_images(crop1_path, crop2_path, image1_path, image2_path, label1_path
         st.image(img2, caption="Crop 2", width=100)
 
     with col3:
-        st.image(full_img1, caption="Full image 1", width=550)
+        st.image(full_img1, caption="Full image 1", width=500)
 
     with col4:
-        st.image(full_img2, caption="Full image 2", width=550)
+        st.image(full_img2, caption="Full image 2", width=500)
 
 def filter_files(files):
     used_id = []
@@ -150,8 +150,10 @@ def initialize_session_state():
         st.session_state.image_list1 = []
     if "image_list2" not in st.session_state:
         st.session_state.image_list2 = []
-    if "results" not in st.session_state:
-        st.session_state.results = []
+    if 'undo_stack1' not in st.session_state:
+        st.session_state.undo_stack1 = []
+    if 'undo_stack2' not in st.session_state:
+        st.session_state.undo_stack2 = []
     if "bback1_disabled" not in st.session_state:
         st.session_state.bback1_disabled = True
     if "bnext1_disabled" not in st.session_state:
@@ -166,6 +168,10 @@ def initialize_session_state():
         st.session_state.bdel1_disabled = False
     if "bdel2_disabled" not in st.session_state:
         st.session_state.bdel2_disabled = False
+    if "bundo_del1_disabled" not in st.session_state:
+        st.session_state.bundo_del1_disabled = False
+    if "bundo_del2_disabled" not in st.session_state:
+        st.session_state.bundo_del2_disabled = False
 
 def start_comparison():
     """Callback for the Run button"""
@@ -206,29 +212,46 @@ def back2():
 
 def del1():
     if len(st.session_state.image_list1) > 0:
+        # Save the current state before deleting (push to undo stack)
+        st.session_state.undo_stack1.append((
+            st.session_state.image_list1[:],  # Clone the current list
+            st.session_state.img1
+        ))
+        
+        # delete image
         current_image = st.session_state.image_list1[st.session_state.img1]
         st.session_state.image_list1.remove(current_image)
-        st.session_state.img1 = min(st.session_state.img1, len(st.session_state.image_list1) - 1) 
+        st.session_state.img1 = min(st.session_state.img1, len(st.session_state.image_list1) - 1)
 
 def del2():
     if len(st.session_state.image_list2) > 0:
+        st.session_state.undo_stack2.append((
+            st.session_state.image_list2[:], 
+            st.session_state.img2
+        ))
+
         current_image = st.session_state.image_list2[st.session_state.img2]
         st.session_state.image_list2.remove(current_image)
         st.session_state.img2 = min(st.session_state.img2, len(st.session_state.image_list2) - 1) 
+
+def undo_del1():
+    if st.session_state.undo_stack1:
+        # Pop the last state from the undo stack
+        previous_state = st.session_state.undo_stack1.pop()
+        st.session_state.image_list1, st.session_state.img1 = previous_state
+
+def undo_del2():
+    if st.session_state.undo_stack2:
+        previous_state = st.session_state.undo_stack2.pop()
+        st.session_state.image_list2, st.session_state.img2 = previous_state
 
 def match():
     database.create_table("checkpoint")
     database.insert_data("checkpoint")
     
-    if len(st.session_state.image_list1) > 0:
-        current_image = st.session_state.image_list1[st.session_state.img1]
-        st.session_state.image_list1.remove(current_image)
-        st.session_state.img1 = min(st.session_state.img1, len(st.session_state.image_list1) - 1) 
-
-    if len(st.session_state.image_list2) > 0:
-        current_image = st.session_state.image_list2[st.session_state.img2]
-        st.session_state.image_list2.remove(current_image)
-        st.session_state.img2 = min(st.session_state.img2, len(st.session_state.image_list2) - 1) 
+    # remove both images as they are matched
+    del1()
+    del2()
 
 def save():
     if not database.check_table_exist("checkpoint"):
