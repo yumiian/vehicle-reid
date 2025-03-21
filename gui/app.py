@@ -164,16 +164,17 @@ if task_type == "Compare Images":
             bcol3.button("Previous", use_container_width=True, key="bback2", disabled=st.session_state.bback2_disabled, on_click=comparison.back2)
             bcol4.button("Next", use_container_width=True, key="bnext2", disabled=st.session_state.bnext2_disabled, on_click=comparison.next2)
 
+            # Action buttons
+            st.button("Match found", type="primary", use_container_width=True, disabled=st.session_state.bmatch_disabled, on_click=comparison.match)
+
             # Display images
             with st.container(border=True):
                 comparison.compare_images(st.session_state.image_list1[st.session_state.img1], st.session_state.image_list2[st.session_state.img2], img1_path, img2_path, label1_path, label2_path)
             
+            # Other buttons
             bcol5, bcol6 = st.columns(2, vertical_alignment="bottom")
-            bcol5.button("Delete", use_container_width=True, key="bdel1", disabled=st.session_state.bdel1_disabled, on_click=comparison.del1)
-            bcol6.button("Delete", use_container_width=True, key="bdel2", disabled=st.session_state.bdel2_disabled, on_click=comparison.del2)
-
-            # Action buttons
-            st.button("Match found", type="primary", use_container_width=True, disabled=st.session_state.bmatch_disabled, on_click=comparison.match)
+            bcol5.button("Delete", type="primary", use_container_width=True, key="bdel1", disabled=st.session_state.bdel1_disabled, on_click=comparison.del1)
+            bcol6.button("Delete", type="primary", use_container_width=True, key="bdel2", disabled=st.session_state.bdel2_disabled, on_click=comparison.del2)
 
 ########################
 
