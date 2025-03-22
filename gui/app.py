@@ -2,6 +2,7 @@ from pathlib import Path
 import streamlit as st
 import pandas as pd
 import os
+import albumentations as A
 
 import settings
 import helper
@@ -13,6 +14,7 @@ import reid
 import visualization
 import prepare_VeRi
 import database
+import augment
 
 # initialize path and directories
 model_path = Path(settings.YOLO_MODEL_FILEPATH)
@@ -39,7 +41,7 @@ st.set_page_config(
 st.sidebar.header("Tasks Selection")
 with st.sidebar.container(border=True):
     if "task_option" not in st.session_state:
-        st.session_state.task_option = ["Create Crops", "Compare Images", "Dataset Split", "Model Training", "Model Testing", "Visualization"]
+        st.session_state.task_option = ["Create Crops", "Compare Images", "Dataset Augmentation", "Dataset Split", "Model Training", "Model Testing", "Visualization"]
     if "database_added" not in st.session_state:
         if os.path.isfile(db_path):
             st.session_state.task_option.append("Database Management")
@@ -182,6 +184,63 @@ if task_type == "Compare Images":
             bcol7, bcol8 = st.columns(2, vertical_alignment="bottom")
             bcol7.button("Undo", use_container_width=True, key="bundo_del1", disabled=st.session_state.bundo_del1_disabled, on_click=comparison.undo_del1)
             bcol8.button("Undo", use_container_width=True, key="bundo_del2", disabled=st.session_state.bundo_del2_disabled, on_click=comparison.undo_del2)
+
+########################
+
+if task_type == "Dataset Augmentation":
+    with st.sidebar.container(border=True):
+        transform_list = []
+
+        image_path = st.text_input("Dataset Path", value="gui/crops/crop", key="augment_dataset_path")
+
+        st.write("Apply crop image augmentation:")
+        horflip = st.checkbox("HorizontalFlip", help="Flip the input horizontally around the y-axis.")
+        if horflip:
+            horflip_p = st.slider("HorizontalFlip Probability", min_value=0.0, max_value=1.0, step=0.1, value=0.5)
+            transform_list.append(A.HorizontalFlip(p=horflip_p))
+
+        verflip = st.checkbox("VerticalFlip", help="Flip the input vertically around the x-axis.")
+        if verflip:
+            verflip_p = st.slider("VerticalFlip Probability", min_value=0.0, max_value=1.0, step=0.1, value=0.5)
+            transform_list.append(A.VerticalFlip(p=verflip_p))
+
+        rotate = st.checkbox("RandomRotate90", help="Randomly rotate the input by 90 degrees zero or more times.")
+        if rotate:
+            rotate_p = st.slider("RandomRotate90 Probability", min_value=0.0, max_value=1.0, step=0.1, value=0.5)
+            transform_list.append(A.RandomRotate90(p=rotate_p))
+
+        erasing = st.checkbox("Erasing", help="Randomly erases rectangular regions in an image, following the Random Erasing Data Augmentation technique.")
+        if erasing:
+            erasing_p = st.slider("Erasing Probability", min_value=0.0, max_value=1.0, step=0.1, value=0.5)
+            transform_list.append(A.Erasing(p=erasing_p))
+
+        colorjitter = st.checkbox("ColorJitter", help="Randomly changes the brightness, contrast, saturation, and hue of an image.")
+        if colorjitter:
+            colorjitter_p = st.slider("ColorJitter Probability", min_value=0.0, max_value=1.0, step=0.1, value=0.5)
+            transform_list.append(A.ColorJitter(p=colorjitter_p))
+
+        sharpen = st.checkbox("Sharpen", help="Sharpen the input image using either kernel-based or Gaussian interpolation method.")
+        if sharpen:
+            sharpen_p = st.slider("Sharpen Probability", min_value=0.0, max_value=1.0, step=0.1, value=0.5)
+            transform_list.append(A.Sharpen(p=sharpen_p))
+
+        unsharpmask = st.checkbox("UnsharpMask", help="Sharpen the input image using Unsharp Masking processing and overlays the result with the original image.")
+        if unsharpmask:
+            unsharpmask_p = st.slider("UnsharpMask Probability", min_value=0.0, max_value=1.0, step=0.1, value=0.5)
+            transform_list.append(A.UnsharpMask(p=unsharpmask_p))
+
+        clahe = st.checkbox("CLAHE", help="Apply Contrast Limited Adaptive Histogram Equalization (CLAHE) to the input image.")
+        if clahe:
+            clahe_p = st.slider("CLAHE Probability", min_value=0.0, max_value=1.0, step=0.1, value=0.5)
+            transform_list.append(A.CLAHE(p=clahe_p))
+
+        seed = st.number_input(label="Set random seed", value=137)
+
+    run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
+    if run_button:
+        with st.spinner("Running..."):
+            augment.augment(transform_list, seed, image_path)
+        st.success(f'Images successfully augmented in "{image_path}"')
 
 ########################
 

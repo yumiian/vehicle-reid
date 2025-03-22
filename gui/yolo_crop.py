@@ -119,12 +119,7 @@ def track(model, video_path, save_path, show=False, conf=0.7, line_width=2, clas
             if not os.path.exists(frame_path):
                 cv2.imwrite(frame_path, frame)
 
-        # Break the loop if 'q' is pressed
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
-
     cap.release()
-    cv2.destroyAllWindows()
 
     # Clean up
     if save_frames or save_txt:
