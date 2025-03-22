@@ -5,18 +5,6 @@ import shutil
 
 import database
 
-def create_txt(image_path, output_path, filename):
-    with open(os.path.join(output_path, filename), "w") as f:
-        for filename in os.listdir(image_path):
-            if not filename.endswith(".jpg"):
-                continue
-
-            parts = filename.split('-')
-            id = parts[-1].split('.')[0] 
-            camera = parts[1]
-
-            f.write(f"{filename} {id} {camera}\n")
-
 def extract_number(filename):
     parts = filename.split('_')
     
@@ -168,5 +156,3 @@ def save_crop(save_path):
         database.insert_data("image", os.path.splitext(file)[0].split("-")[-1].split("_")[-1]) # frame_000000 -> 000000
 
         crop_labels(image_file, label_file, crop_path)
-
-    create_txt(crop_path, os.path.dirname(crop_path), "crops.txt")

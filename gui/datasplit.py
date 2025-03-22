@@ -26,18 +26,6 @@ def move_files(input_file_list, output_path):
     for f in input_file_list:
         shutil.copy(f, os.path.join(output_path, os.path.basename(f)))
 
-def create_txt(image_path, output_path, filename):
-    with open(os.path.join(output_path, filename), "w") as f:
-        for filename in os.listdir(image_path):
-            if not filename.endswith(".jpg"):
-                continue
-
-            parts = filename.split('-')
-            id = parts[-1].split('.')[0] 
-            camera = parts[1]
-
-            f.write(f"{filename} {id} {camera}\n")
-
 def split(output_path, files, gallery, query):
     train_path = os.path.join(output_path, "train")
     gallery_path = os.path.join(output_path, "gallery")
@@ -60,15 +48,6 @@ def split(output_path, files, gallery, query):
 
     # no duplicates found
     return True
-
-def create_txt_labels(output_path):
-    train_path = os.path.join(output_path, "train")
-    gallery_path = os.path.join(output_path, "gallery")
-    query_path = os.path.join(output_path, "query")
-
-    create_txt(train_path, output_path, "train.txt")
-    create_txt(gallery_path, output_path, "gallery.txt")
-    create_txt(query_path, output_path, "query.txt")
 
 def create_csv(image_path, output_path, image_type):
     csv_filename = image_type + ".csv"
@@ -128,4 +107,3 @@ def datasplit(crop_dir1, crop_dir2, output_path, split_ratio):
         
     create_csv_labels(output_path)
     train_val_split(output_path, split_ratio)
-    # create_txt_labels(output_path)
