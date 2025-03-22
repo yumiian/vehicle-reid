@@ -41,7 +41,7 @@ st.set_page_config(
 st.sidebar.header("Tasks Selection")
 with st.sidebar.container(border=True):
     if "task_option" not in st.session_state:
-        st.session_state.task_option = ["Create Crops", "Compare Images", "Dataset Augmentation", "Dataset Split", "Model Training", "Model Testing", "Visualization"]
+        st.session_state.task_option = ["Data Preparation", "Image Comparison", "Data Augmentation", "Dataset Split", "Model Training", "Model Testing", "Visualization"]
     if "database_added" not in st.session_state:
         if os.path.isfile(db_path):
             st.session_state.task_option.append("Database Management")
@@ -51,8 +51,10 @@ with st.sidebar.container(border=True):
 ########################
 
 st.sidebar.header("Task Configuration")
-if task_type == "Create Crops":
+if task_type == "Data Preparation":
     with st.sidebar.container(border=True):
+        uploaded_video = st.file_uploader("Select video file", type=['mp4'])
+
         confidence = float(st.slider("Model Confidence Level", 25, 100, 80)) / 100
 
         if "location" not in st.session_state:
@@ -62,7 +64,6 @@ if task_type == "Create Crops":
         if "time" not in st.session_state:
             st.session_state.time = None
 
-        uploaded_video = st.file_uploader("Select video file", type=['mp4'])
         st.session_state.location = st.selectbox("Location", options=["KJ", "SJ", "Custom"])
         if st.session_state.location == "Custom":
             st.session_state.location = st.text_input("Custom Location", placeholder="Max characters: 6")
@@ -118,7 +119,7 @@ if task_type == "Create Crops":
 
 ########################
 
-if task_type == "Compare Images":
+if task_type == "Image Comparison":
     comparison.initialize_session_state()
 
     with st.sidebar.container(border=True):
@@ -187,7 +188,7 @@ if task_type == "Compare Images":
 
 ########################
 
-if task_type == "Dataset Augmentation":
+if task_type == "Data Augmentation":
     with st.sidebar.container(border=True):
         transform_list = []
 
