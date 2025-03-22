@@ -2,7 +2,6 @@ import sqlite3
 import os
 from pathlib import Path
 import pandas as pd
-import time
 import streamlit as st
 
 import settings
@@ -248,6 +247,3 @@ def dialog_delete_db():
             return
 
         st.success("Database successfully deleted. Please refresh the page.")
-        # st.write("Auto close in 3 seconds...")
-        # time.sleep(3)
-        # st.rerun()
