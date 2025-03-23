@@ -64,6 +64,17 @@ $ streamlit run gui/app.py
 
 Now you can view the application in your browser. By default, the app local URL is at http://localhost:8501/.
 
+## Troubleshoot
+This message may showed up after opening the Streamlit GUI using WSL. 
+
+`gio: http://localhost:8501: Operation not supported`
+
+This issue apparently is WSL trying to open WSL browser instead of Windows Browser. You can safely ignore this or run this command:
+
+```
+$ sudo apt-get install wslu
+```
+
 ## Acknowledgments
 
 * [regob's Vehicle Re-ID](https://github.com/regob/vehicle_reid)
