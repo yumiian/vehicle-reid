@@ -92,11 +92,14 @@ def cleanup(save_path):
         if folder not in main_folder:
             shutil.rmtree(os.path.join(save_path, folder)) # remove unwanted folders
 
-def track(model, video_path, save_path, show=False, conf=0.7, line_width=2, classes=[2, 7], save_frames=False, save_txt=False, prefix="result"):
+def track(model, video_path, save_path, conf=0.7, line_width=2, classes=[2, 7], save_frames=False, save_txt=False, prefix="result"):
     model = YOLO(model)
     cap = cv2.VideoCapture(video_path)
 
     filename = f"{prefix}-frame_"
+
+    if save_frames:
+        os.makedirs(os.path.join(save_path, "images"), exist_ok=True)
 
     while cap.isOpened():
         success, frame = cap.read()
@@ -104,17 +107,10 @@ def track(model, video_path, save_path, show=False, conf=0.7, line_width=2, clas
         if not success:
             break
         
-        results = model.track(frame, persist=True, conf=conf, line_width=line_width, classes=classes, project=save_path, name=filename, save_txt=save_txt)
+        model.track(frame, persist=True, conf=conf, line_width=line_width, classes=classes, project=save_path, name=filename, save_txt=save_txt)
 
-        # Visualize the results on the frame
-        if show:
-            annotated_frame = results[0].plot()
-            cv2.imshow("YOLO11 Tracking", annotated_frame)
-
-        # Save frames
         if save_frames:
             frame_filename = f'{prefix}-frame_{int(cap.get(cv2.CAP_PROP_POS_FRAMES)):06d}.jpg'
-            os.makedirs(os.path.join(save_path, "images"), exist_ok=True)
             frame_path = os.path.join(save_path, "images", frame_filename)
             if not os.path.exists(frame_path):
                 cv2.imwrite(frame_path, frame)
@@ -124,8 +120,6 @@ def track(model, video_path, save_path, show=False, conf=0.7, line_width=2, clas
     # Clean up
     if save_frames or save_txt:
         organize(save_path, prefix)
-
-    # cleanup
     cleanup(save_path)
 
 def save_crop(save_path):
