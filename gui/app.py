@@ -79,7 +79,7 @@ if task_type == "Data Preparation":
                 st.warning("Maximum 6 characters only!")
                 st.session_state.camera_id = st.session_state.camera_id[:6]
 
-        st.session_state.time = st.selectbox("Time", options=["8AM", "11AM", "3PM", "8PM", "Custom"])
+        st.session_state.time = st.selectbox("Time", options=["0800", "1100", "1500", "2000", "Custom"])
         if st.session_state.time == "Custom":
             st.session_state.time = st.text_input("Custom Time", placeholder="Max characters: 6")
             if st.session_state.time and len(st.session_state.time) > 6:
@@ -131,17 +131,24 @@ if task_type == "Image Comparison":
             st.button("Resume from checkpoint", use_container_width=True, on_click=comparison.resume)
             st.button("Delete checkpoint", use_container_width=True, on_click=comparison.reset)
         
-    st.sidebar.button("Run", type="primary", use_container_width=True, on_click=comparison.start_comparison)
+    paths = [st.session_state.crop_dir1, st.session_state.crop_dir2]
+    path_not_exists = any(not os.path.exists(path) for path in paths)
+    st.sidebar.button("Run", type="primary", use_container_width=True, disabled=path_not_exists, on_click=comparison.start_comparison)
 
-    if os.path.isfile(db_path):
-        save_button = st.sidebar.button("Save results", type="primary", use_container_width=True)
-        if save_button:
-            with st.spinner("Running..."):
-                if comparison.save():
-                    new_crop_dir1 = helper.create_subfolders(crops_dir, "crop")
-                    new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
-                    rename.rename_files(st.session_state.crop_dir1, st.session_state.crop_dir2, new_crop_dir1, new_crop_dir2)
-                    st.success(f'Results successfully saved to "{new_crop_dir1}" and "{new_crop_dir2}".')
+    # error check
+    if not os.path.isdir(st.session_state.crop_dir1):
+        st.error("First crop directory path is not found!")
+    if not os.path.isdir(st.session_state.crop_dir2):
+        st.error("Second crop directory path is not found!")
+
+    save_button = st.sidebar.button("Save results", type="primary", use_container_width=True, disabled=not os.path.isfile(db_path))
+    if save_button:
+        with st.spinner("Running..."):
+            if comparison.save():
+                new_crop_dir1 = helper.create_subfolders(crops_dir, "crop")
+                new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
+                rename.rename_files(st.session_state.crop_dir1, st.session_state.crop_dir2, new_crop_dir1, new_crop_dir2)
+                st.success(f'Results successfully saved to "{new_crop_dir1}" and "{new_crop_dir2}".')
     
     # Only show comparison interface if running
     if st.session_state.is_running:
@@ -192,9 +199,9 @@ if task_type == "Data Augmentation":
     with st.sidebar.container(border=True):
         transform_list = []
 
-        image_path = st.text_input("Dataset Path", value="gui/crops/crop", key="augment_dataset_path")
+        image_path = st.text_input("Images Directory Path", value="gui/crops/crop", key="augment_images_path")
 
-        st.write("Apply crop image augmentation:")
+        st.write("Apply augmentation techniques:")
         horflip = st.checkbox("HorizontalFlip", help="Flip the input horizontally around the y-axis.")
         if horflip:
             horflip_p = st.slider("HorizontalFlip Probability", min_value=0.0, max_value=1.0, step=0.1, value=0.5)
@@ -237,7 +244,14 @@ if task_type == "Data Augmentation":
 
         seed = st.number_input(label="Set random seed", value=137)
 
-    run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
+    paths = [image_path]
+    path_not_exists = any(not os.path.exists(path) for path in paths)
+    run_button = st.sidebar.button("Run", type="primary", use_container_width=True, disabled=path_not_exists)
+
+    # error check
+    if not os.path.isdir(image_path):
+        st.error("Images directory path is not found!")
+
     if run_button:
         with st.spinner("Running..."):
             augment.augment(transform_list, seed, image_path)
@@ -256,7 +270,7 @@ if task_type == "Dataset Split":
         if custom_dataset:
             dataset_selection = st.radio("Custom Dataset", options=["VeRi-776"], label_visibility="collapsed")
             if dataset_selection == "VeRi-776":
-                VeRi_dir = st.text_input("Dataset Directory", value="gui/datasets/VeRi")
+                VeRi_dir = st.text_input("Dataset Directory Path", value="gui/datasets/VeRi")
                 train_path = os.path.join(VeRi_dir, "name_train.txt")
                 train_csv_path = os.path.join(VeRi_dir, "train.csv")
 
@@ -266,7 +280,16 @@ if task_type == "Dataset Split":
                 query_path = os.path.join(VeRi_dir, "name_query.txt")
                 query_csv_path = os.path.join(VeRi_dir, "query.csv")
 
-    run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
+    paths = [crop_dir1, crop_dir2]
+    path_not_exists = any(not os.path.exists(path) for path in paths)
+    run_button = st.sidebar.button("Run", type="primary", use_container_width=True, disabled=path_not_exists)
+
+    # error check
+    if not os.path.isdir(crop_dir1):
+        st.error("First crop directory path is not found!")
+    if not os.path.isdir(crop_dir2):
+        st.error("Second crop directory path is not found!")
+
     if run_button:
         with st.spinner("Running..."):
             if custom_dataset:
@@ -285,7 +308,7 @@ if task_type == "Dataset Split":
 
 if task_type == "Model Training":
     with st.sidebar.container(border=True):
-        data_dir = st.text_input("Dataset Directory", value="gui/datasets/reid", help="Path to the dataset root directory")
+        data_dir = st.text_input("Dataset Directory Path", value="gui/datasets/reid", help="Path to the dataset root directory path")
         train_csv_path = os.path.join(data_dir, "train.csv")
         val_csv_path = os.path.join(data_dir, "val.csv")
 
@@ -338,11 +361,11 @@ if task_type == "Model Training":
 
     # error check
     if not os.path.isdir(data_dir):
-        st.error("Dataset directory is not found!")
+        st.error("Dataset directory path is not found!")
     if not os.path.isfile(train_csv_path):
-        st.error("train.csv file not found in dataset directory!")
+        st.error("train.csv file not found in dataset directory path!")
     if not os.path.isfile(val_csv_path):
-        st.error("val.csv file not found in dataset directory!")
+        st.error("val.csv file not found in dataset directory path!")
     
     if run_button:
         with st.spinner("Running..."):
@@ -361,11 +384,11 @@ if task_type == "Model Training":
 
 if task_type == "Model Testing":
     with st.sidebar.container(border=True):
-        data_dir = st.text_input("Dataset Directory", value="gui/datasets/reid", help="Path to the dataset root directory")
+        data_dir = st.text_input("Dataset Directory Path", value="gui/datasets/reid", help="Path to the dataset root directory path")
         query_csv_path = os.path.join(data_dir, "query.csv")
         gallery_csv_path = os.path.join(data_dir, "gallery.csv")
         
-        model_dir = st.text_input("Model Directory:", value="model/resnet50", help="Path to the model root directory")
+        model_dir = st.text_input("Model Directory Path:", value="model/resnet50", help="Path to the model root directory path")
         model_opts = os.path.join(model_dir, "opts.yaml")
         checkpoint = st.text_input("Model pth Filename", value="net_59.pth", help="Model pth file")
         checkpoint = os.path.join(model_dir, checkpoint)
@@ -380,18 +403,18 @@ if task_type == "Model Testing":
 
     # error check
     if not os.path.isdir(data_dir):
-        st.error("Dataset directory is not found!")
+        st.error("Dataset directory path is not found!")
     if not os.path.isfile(query_csv_path):
-        st.error("query.csv file not found in dataset directory!")
+        st.error("query.csv file not found in dataset directory path!")
     if not os.path.isfile(gallery_csv_path):
-        st.error("gallery.csv file not found in dataset directory!")
+        st.error("gallery.csv file not found in dataset directory path!")
 
     if not os.path.isdir(model_dir):
-        st.error("Model directory is not found!")
+        st.error("Model directory path is not found!")
     if not os.path.isfile(model_opts):
-        st.error("opts.yaml file not found in model directory!")
+        st.error("opts.yaml file not found in model directory path!")
     if not os.path.isfile(checkpoint):
-        st.error("Model pth file not found in model directory!")
+        st.error("Model pth file not found in model directory path!")
     
     if run_button:
         with st.spinner("Running..."):
@@ -409,11 +432,11 @@ if task_type == "Model Testing":
 
 if task_type == "Visualization":
     with st.sidebar.container(border=True):
-        data_dir = st.text_input("Dataset Directory", value="gui/datasets/reid", help="Path to the dataset root directory")
+        data_dir = st.text_input("Dataset Directory Path", value="gui/datasets/reid", help="Path to the dataset root directory path")
         query_csv_path = os.path.join(data_dir, "query.csv")
         gallery_csv_path = os.path.join(data_dir, "gallery.csv")
         
-        model_dir = st.text_input("Model Directory:", value="model/resnet50", help="Path to the model root directory")
+        model_dir = st.text_input("Model Directory Path:", value="model/resnet50", help="Path to the model root directory path")
         model_opts = os.path.join(model_dir, "opts.yaml")
         checkpoint = st.text_input("Model pth Filename", value="net_59.pth", help="Model pth file")
         checkpoint = os.path.join(model_dir, checkpoint)
@@ -436,18 +459,18 @@ if task_type == "Visualization":
         
     # error check
     if not os.path.isdir(data_dir):
-        st.error("Dataset directory is not found!")
+        st.error("Dataset directory path is not found!")
     if not os.path.isfile(query_csv_path):
-        st.error("query.csv file not found in dataset directory!")
+        st.error("query.csv file not found in dataset directory path!")
     if not os.path.isfile(gallery_csv_path):
-        st.error("gallery.csv file not found in dataset directory!")
+        st.error("gallery.csv file not found in dataset directory path!")
 
     if not os.path.isdir(model_dir):
-        st.error("Model directory is not found!")
+        st.error("Model directory path is not found!")
     if not os.path.isfile(model_opts):
-        st.error("opts.yaml file not found in model directory!")
+        st.error("opts.yaml file not found in model directory path!")
     if not os.path.isfile(checkpoint):
-        st.error("Model pth file not found in model directory!")
+        st.error("Model pth file not found in model directory path!")
 
     paths = [data_dir, query_csv_path, gallery_csv_path, model_dir, model_opts, checkpoint]
     path_not_exists = any(not os.path.exists(path) for path in paths)
