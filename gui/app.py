@@ -56,6 +56,7 @@ if task_type == "Data Preparation":
         uploaded_video = st.file_uploader("Select video file", type=['mp4'])
 
         confidence = float(st.slider("Model Confidence Level", 25, 100, 80)) / 100
+        batchsize = st.number_input("Batch Size", min_value=10, value=100, step=10, help="Batch size in number of frames")
 
         if "location" not in st.session_state:
             st.session_state.location = None
@@ -107,7 +108,7 @@ if task_type == "Data Preparation":
             database.insert_data("video")
 
             new_output_dir = helper.create_subfolders(output_dir, "output")
-            yolo_crop.track(model_path, video_path, new_output_dir, conf=confidence, save_frames=True, save_txt=True, prefix=prefix)
+            yolo_crop.track(model_path, video_path, new_output_dir, batchsize=batchsize, conf=confidence, save_frames=True, save_txt=True, prefix=prefix)
             yolo_crop.save_crop(new_output_dir)
 
         st.success(f'Done! Output files saved to "{new_output_dir}"')
