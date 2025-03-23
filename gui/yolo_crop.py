@@ -13,7 +13,7 @@ def extract_number(filename):
     
     return int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
 
-def edit_yolo_txt(input_path, output_path):
+def edit_yolo_txt(input_path, output_path, verbose=False):
     with open(input_path, "r") as infile:
         lines = infile.readlines()
 
@@ -26,7 +26,8 @@ def edit_yolo_txt(input_path, output_path):
                 new_line = f"{last_value} " + " ".join(values[1:-1]) 
                 outfile.write(new_line + "\n")
             except ValueError:
-                print(f"Skipping line due to non-integer last value: {line.strip()}")
+                if verbose:
+                    print(f"Skipping line due to non-integer last value: {line.strip()}")
                 pass # if it is not int, skip (bug)
 
 def organize(save_path, prefix):
@@ -160,19 +161,21 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
         # Update Streamlit progress
         if st and frame_count % 10 == 0:  
             progress_bar.progress(frame_count / total_frames)
-            progress_text.text(f"Processing frame {frame_count}/{total_frames} ({frame_count/total_frames*100:.1f}%)")
+            progress_text.text(f"Processing frame {frame_count}/{total_frames} ({frame_count/total_frames*100:.2f}%)")
             
             elapsed_time = time.time() - start_time
             estimated_total = (elapsed_time / frame_count) * total_frames
             remaining_time = estimated_total - elapsed_time
+            minutes, seconds = map(int, divmod(elapsed_time, 60))
+            rem_min, rem_s = map(int, divmod(remaining_time, 60))
             
             stats_container.write(f"""
             | Metric | Value |
             | --- | --- |
-            | Elapsed Time | {elapsed_time:.1f} seconds |
-            | Average Processing Time | {avg_time * 1000:.1f} ms/frame |
-            | Estimated Time Remaining | {remaining_time / 60:.1f} minutes |
-            | Current FPS | {frame_count / elapsed_time:.1f} |
+            | Elapsed Time | {minutes:02d}:{seconds:02d} |
+            | Average Processing Time | {avg_time * 1000:.2f} ms/frame |
+            | Estimated Time Remaining | {rem_min:02d}:{rem_s:02d} |
+            | Current FPS | {frame_count / elapsed_time:.2f} |
             """)
     
     cap.release()
@@ -180,13 +183,16 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
     progress_bar.progress(1.0)
     progress_text.text(f"Processing complete!")
 
+    total_time = time.time() - start_time
+    total_min, total_s = map(int, divmod(total_time, 60))
+
     st.write("Overall Statistics:")
     st.write(f"""
             | Metric | Value |
             | --- | --- |
             | Total Frames Processed | {frame_count} |
-            | Total Time Taken | {time.time() - start_time:.1f} seconds |
-            | Average FPS | {frame_count / (time.time() - start_time):.2f} |
+            | Total Time Taken | {total_min:02d}:{total_s:02d} |
+            | Average FPS | {frame_count / (total_time):.2f} |
             """)
     
     # Clean up
