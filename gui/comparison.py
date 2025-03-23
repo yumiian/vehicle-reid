@@ -116,6 +116,13 @@ def get_image_label_path(img):
     label_path = full_path + ".txt" # datasets2/track/KJ-C1-08AM/crops\KJ-C1-08AM-frame_007489.txt
     label_path = label_path.replace("crops", "labels") # datasets2/track/KJ-C1-08AM/labels\KJ-C1-08AM-frame_007489.txt
 
+    # if path is in Windows (mnt), add slash in front to fix invalid path error
+    if image_path.startswith("mnt"):
+        image_path = "/" + image_path
+
+    if label_path.startswith("mnt"):
+        label_path = "/" + label_path
+
     return (image_path, label_path)
 
 def save_last_imgs(resume_path, imgs1, imgs2):
