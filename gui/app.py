@@ -500,5 +500,5 @@ if task_type == "Database Management":
     if table_selected:
         st.subheader(f'"{table_selected}" table')
         df = database.db_to_df(table_selected) # convert database to dataframe
-        edited_df = st.data_editor(df, use_container_width=True, disabled=("id", "video_id", "image_id", "crop_id"), height=35*len(df)+38) # show all rows
+        edited_df = st.data_editor(df, use_container_width=True, disabled=("id", "video_id", "image_id", "crop_id")) # show all rows
         database.df_to_db(edited_df, table_selected) # apply changes to database
