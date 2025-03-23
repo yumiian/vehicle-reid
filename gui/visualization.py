@@ -1,7 +1,6 @@
 import os
 import sys
 import math
-import random
 import streamlit as st
 
 import numpy as np
@@ -12,6 +11,9 @@ from torch.autograd import Variable
 from torchvision import transforms
 import matplotlib.pyplot as plt
 import tqdm
+
+# fix "Examining the path of torch.classes raised: Tried to instantiate class '__path__._path', but it does not exist!"
+torch.classes.__path__ = [os.path.join(torch.__path__[0], torch.classes.__file__)] 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -163,8 +165,6 @@ def visualize(data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint
             gallery_labels = np.array(gallery_labels)
 
     dataset = image_datasets["query"]
-    # queries = list(range(len(dataset)))
-    # random.shuffle(queries)
 
     if use_saved_mat:
         q_feature = query_features[curr_idx]
