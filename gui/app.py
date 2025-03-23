@@ -123,8 +123,8 @@ if task_type == "Image Comparison":
     comparison.initialize_session_state()
 
     with st.sidebar.container(border=True):
-        st.session_state.crop_dir1 = st.text_input("First Crop Directory Path", value="gui/output/output/crops", key="crop_dir1_input")
-        st.session_state.crop_dir2 = st.text_input("Second Crop Directory Path", value="gui/output/output2/crops", key="crop_dir2_input")
+        st.session_state.crop_dir1 = st.text_input("First Crop Directory Path", value=os.path.join(output_dir, "output/crops"), key="crop_dir1_input")
+        st.session_state.crop_dir2 = st.text_input("Second Crop Directory Path", value=os.path.join(output_dir, "output2/crops"), key="crop_dir2_input")
 
         if os.path.isfile(db_path):
             st.button("Save progress", use_container_width=True, on_click=comparison.save)
@@ -199,7 +199,7 @@ if task_type == "Data Augmentation":
     with st.sidebar.container(border=True):
         transform_list = []
 
-        image_path = st.text_input("Images Directory Path", value="gui/crops/crop", key="augment_images_path")
+        image_path = st.text_input("Images Directory Path", value=os.path.join(crops_dir, "crop"), key="augment_images_path")
 
         st.write("Apply augmentation techniques:")
         horflip = st.checkbox("HorizontalFlip", help="Flip the input horizontally around the y-axis.")
@@ -261,8 +261,8 @@ if task_type == "Data Augmentation":
 
 if task_type == "Dataset Split":
     with st.sidebar.container(border=True):
-        crop_dir1 = st.text_input("First Crop Directory Path", value="gui/crops/crop", key="crop_dir1_input")
-        crop_dir2 = st.text_input("Second Crop Directory Path", value="gui/crops/crop2", key="crop_dir2_input")
+        crop_dir1 = st.text_input("First Crop Directory Path", value=os.path.join(crops_dir, "crop"), key="crop_dir1_input")
+        crop_dir2 = st.text_input("Second Crop Directory Path", value=os.path.join(crops_dir, "crop2"), key="crop_dir2_input")
         dataset_name = st.text_input("Dataset Name", value="reid", key="dataset_name_input")
         split_ratio = st.slider("Split Ratio", min_value=0.0, max_value=1.0, step=0.05, value=0.75)
 
@@ -270,7 +270,7 @@ if task_type == "Dataset Split":
         if custom_dataset:
             dataset_selection = st.radio("Custom Dataset", options=["VeRi-776"], label_visibility="collapsed")
             if dataset_selection == "VeRi-776":
-                VeRi_dir = st.text_input("Dataset Directory Path", value="gui/datasets/VeRi")
+                VeRi_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "VeRi"))
                 train_path = os.path.join(VeRi_dir, "name_train.txt")
                 train_csv_path = os.path.join(VeRi_dir, "train.csv")
 
@@ -308,7 +308,7 @@ if task_type == "Dataset Split":
 
 if task_type == "Model Training":
     with st.sidebar.container(border=True):
-        data_dir = st.text_input("Dataset Directory Path", value="gui/datasets/reid", help="Path to the dataset root directory path")
+        data_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "reid"), help="Path to the dataset root directory path")
         train_csv_path = os.path.join(data_dir, "train.csv")
         val_csv_path = os.path.join(data_dir, "val.csv")
 
@@ -384,7 +384,7 @@ if task_type == "Model Training":
 
 if task_type == "Model Testing":
     with st.sidebar.container(border=True):
-        data_dir = st.text_input("Dataset Directory Path", value="gui/datasets/reid", help="Path to the dataset root directory path")
+        data_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "reid"), help="Path to the dataset root directory path")
         query_csv_path = os.path.join(data_dir, "query.csv")
         gallery_csv_path = os.path.join(data_dir, "gallery.csv")
         
@@ -432,7 +432,7 @@ if task_type == "Model Testing":
 
 if task_type == "Visualization":
     with st.sidebar.container(border=True):
-        data_dir = st.text_input("Dataset Directory Path", value="gui/datasets/reid", help="Path to the dataset root directory path")
+        data_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "reid"), help="Path to the dataset root directory path")
         query_csv_path = os.path.join(data_dir, "query.csv")
         gallery_csv_path = os.path.join(data_dir, "gallery.csv")
         
