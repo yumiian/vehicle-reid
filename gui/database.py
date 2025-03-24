@@ -256,5 +256,7 @@ def backup():
     with backup_conn:
         source_conn.backup(backup_conn)
 
+    st.success("Database backup successfully!")
+
     source_conn.close()
     backup_conn.close()
