@@ -7,6 +7,7 @@ import streamlit as st
 import settings
 
 db_path = Path(settings.DATABASE_FILEPATH)
+backup_db_path = Path(settings.BACKUP_DB_FILEPATH)
 
 def create_table(table):
     conn = sqlite3.connect(db_path)
@@ -247,3 +248,13 @@ def dialog_delete_db():
             return
 
         st.success("Database successfully deleted. Please refresh the page.")
+
+def backup():
+    source_conn = sqlite3.connect(db_path)
+    backup_conn = sqlite3.connect(backup_db_path)
+
+    with backup_conn:
+        source_conn.backup(backup_conn)
+
+    source_conn.close()
+    backup_conn.close()

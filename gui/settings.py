@@ -23,9 +23,17 @@ VIDEO_DIR = ROOT / "videos"
 VIDEO_FILEPATH = VIDEO_DIR / "video.mp4"
 
 # dataset 
-OUTPUT_DIR = ROOT / "output"
-CROPS_DIR = ROOT / "crops"
-DATASETS_DIR = ROOT / "datasets"
+# OUTPUT_DIR = ROOT / "output"
+# CROPS_DIR = ROOT / "crops"
+# DATASETS_DIR = ROOT / "datasets"
+
+OUTPUT_DIR = Path("/mnt/e/Code/reid") / "output"
+CROPS_DIR = Path("/mnt/e/Code/reid") / "crops"
+DATASETS_DIR = Path("/mnt/e/Code/reid") / "datasets"
 
 # database
-DATABASE_FILEPATH = ROOT / "reid.db"
+# DATABASE_FILEPATH = ROOT / "reid.db"
+# BACKUP_DB_FILEPATH = ROOT / "reid_.db"
+
+DATABASE_FILEPATH = Path("/mnt/e/Code/reid") / "reid.db"
+BACKUP_DB_FILEPATH = Path("/mnt/e/Code/reid") / "reid_.db"

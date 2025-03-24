@@ -495,6 +495,7 @@ if task_type == "Database Management":
         
         table_selected = st.radio("Edit Database Table", options=st.session_state.db_table, label_visibility="visible")
 
+        st.button("Backup database", use_container_width=True, on_click=database.backup)
         st.button("Delete database", type="primary", use_container_width=True, on_click=database.dialog_delete_db)
 
     if table_selected:
