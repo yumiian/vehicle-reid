@@ -211,7 +211,19 @@ def save_crop(save_path):
     if not os.path.exists(image_path):
         raise FileNotFoundError("images folder not found")
 
-    for file in os.listdir(label_path):
+    # Get list of files first to determine total progress
+    label_files = os.listdir(label_path)
+    total_files = len(label_files)
+    
+    # Create a progress bar
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    # Process each file with progress updates
+    for i, file in enumerate(label_files):
+        # Update status text
+        status_text.text(f"Creating crop image file {i+1}/{total_files}: {file}")
+        
         label_file = os.path.join(label_path, file)
         image_file = os.path.join(image_path, os.path.splitext(file)[0] + ".jpg")
 
@@ -223,3 +235,9 @@ def save_crop(save_path):
         database.insert_data("image", os.path.splitext(file)[0].split("-")[-1].split("_")[-1]) # frame_000000 -> 000000
 
         crop_labels(image_file, label_file, crop_path)
+        
+        # Update progress bar
+        progress_bar.progress((i + 1) / total_files)
+    
+    status_text.text("Crop image files created!")
+    progress_bar.progress(1.0)
