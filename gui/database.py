@@ -147,7 +147,7 @@ def select_data(table, column_name):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    query = f"SELECT {column_name} FROM {table}"
+    query = f"SELECT {column_name} FROM {table};"
 
     cursor.execute(query)
     results = cursor.fetchall()
@@ -155,6 +155,28 @@ def select_data(table, column_name):
     conn.close()
 
     return results
+
+def update_data(table, column_name, value, cond):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    query = f"UPDATE {table} SET {column_name} = {value} WHERE {column_name} IS {cond};"
+
+    cursor.execute(query)
+
+    conn.commit()
+    conn.close()
+
+def update_sqlite_seq(table, column_name):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    query = f"UPDATE sqlite_sequence SET seq = (SELECT MAX({column_name}) FROM {table}) WHERE name = '{table}';"
+
+    cursor.execute(query)
+
+    conn.commit()
+    conn.close()
 
 def check_table_exist(table):
     conn = sqlite3.connect(db_path)
