@@ -91,9 +91,10 @@ if task_type == "Data Preparation":
         
     if (uploaded_video is not None) and (all(x != "" for x in [st.session_state.location, st.session_state.camera_id, st.session_state.time])):
         st.header("Video Preview")
-        col1, col2, col3 = st.columns([0.3, 0.5, 0.3])
-        with col2: # center
-            st.video(uploaded_video)
+        with st.container(border=True):
+            col1, col2, col3 = st.columns([0.3, 0.5, 0.3])
+            with col2: # center
+                st.video(uploaded_video)
 
         video_byte = uploaded_video.getvalue()
         helper.save_file(video_byte, video_dir)
