@@ -71,16 +71,16 @@ def compare_images(crop1_path, crop2_path, image1_path, image2_path, label1_path
     col1, col2 = st.columns(2, vertical_alignment="center", border=False)
     col3, col4 = st.columns(2, vertical_alignment="center", border=False)
     with col1:
-        st.image(img1, caption="Crop 1", width=100)
+        st.image(img1, caption="Crop image 1", width=100)
 
     with col2:
-        st.image(img2, caption="Crop 2", width=100)
+        st.image(img2, caption="Crop image 2", width=100)
 
     with col3:
-        st.image(full_img1, caption="Full image 1", width=500)
+        st.image(full_img1, caption=f"Full image 1 ({st.session_state.img1} / {len(st.session_state.image_list1)})", width=500)
 
     with col4:
-        st.image(full_img2, caption="Full image 2", width=500)
+        st.image(full_img2, caption=f"Full image 2 ({st.session_state.img2} / {len(st.session_state.image_list2)})", width=500)
 
 def filter_files(files):
     used_id = []
