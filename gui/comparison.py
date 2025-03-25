@@ -180,7 +180,7 @@ def initialize_session_state():
     if "bundo_del2_disabled" not in st.session_state:
         st.session_state.bundo_del2_disabled = False
 
-def start_comparison():
+def start_comparison(keep_checkpoint=False):
     """Callback for the Run button"""
     try:
         # Initialize lists
@@ -195,11 +195,14 @@ def start_comparison():
         database.create_table("comparison")
         database.insert_data("comparison", datalist1, datalist2)
 
+        if not keep_checkpoint: # reset checkpoint
+            database.drop_table("checkpoint") 
+
         st.session_state.is_running = True
     except FileNotFoundError:
         st.error("Invalid path!")
     except Exception as e:
-        st.error("Something went wrong", e)
+        st.error(f"Something went wrong: {e}")
 
 def next1():
     if len(st.session_state.image_list1) > 1:
@@ -260,6 +263,12 @@ def match():
     del1()
     del2()
 
+def undo_match():
+    database.undo_last_match("checkpoint")
+
+    undo_del1()
+    undo_del2()
+
 def save():
     if not database.check_table_exist("checkpoint"):
         st.error("No progress to be saved.")
@@ -276,7 +285,11 @@ def resume():
         st.error("No recent checkpoint to resume from.")
         return
 
-    start_comparison()
+    if database.check_table_empty("checkpoint"):
+        st.error("No recent checkpoint to resume from.")
+        return
+
+    start_comparison(keep_checkpoint=True)
     filepath1 = database.compare_data("comparison", "checkpoint", "filepath1")
     filepath2 = database.compare_data("comparison", "checkpoint", "filepath2")
     st.session_state.image_list1 = [data["filepath1"] for data in filepath1]

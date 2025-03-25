@@ -18,7 +18,7 @@ def create_table(table):
     if table == "checkpoint":
         query = f"""
             CREATE TABLE IF NOT EXISTS {table} (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY,
                 image1 CHAR(6) NOT NULL,
                 image2 CHAR(6) NOT NULL,
                 filepath1 TEXT NOT NULL,
@@ -31,7 +31,7 @@ def create_table(table):
 
         query = f"""
             CREATE TABLE IF NOT EXISTS {table} (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY,
                 filepath1 TEXT,
                 filepath2 TEXT
                 )
@@ -41,7 +41,7 @@ def create_table(table):
 
         query = f"""
             CREATE TABLE IF NOT EXISTS {table} (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY,
                 image1 CHAR(6) NOT NULL,
                 image2 CHAR(6) NOT NULL
                 )
@@ -49,7 +49,7 @@ def create_table(table):
     elif table == "video":
         query = f"""
             CREATE TABLE IF NOT EXISTS {table} (
-                video_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                video_id INTEGER PRIMARY KEY,
                 location VARCHAR(6) NOT NULL,
                 camera_id VARCHAR(6) NOT NULL,
                 time VARCHAR(6) NOT NULL
@@ -58,19 +58,19 @@ def create_table(table):
     elif table == "image":
         query = f"""
             CREATE TABLE IF NOT EXISTS {table} (
-                image_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                image_id INTEGER PRIMARY KEY,
                 video_id INTEGER NOT NULL,
                 frame_id CHAR(6) NOT NULL,
-                FOREIGN KEY (video_id) REFERENCES video(video_id) ON DELETE CASCADE
+                FOREIGN KEY (video_id) REFERENCES video(video_id) ON DELETE CASCADE ON UPDATE CASCADE
                 )
         """
     elif table == "crop_image":
         query = f"""
             CREATE TABLE IF NOT EXISTS {table} (
-                crop_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                crop_id INTEGER PRIMARY KEY,
                 image_id INTEGER NOT NULL,
                 label_id CHAR(6) NOT NULL,
-                FOREIGN KEY (image_id) REFERENCES image(image_id) ON DELETE CASCADE
+                FOREIGN KEY (image_id) REFERENCES image(image_id) ON DELETE CASCADE ON UPDATE CASCADE
                 )
         """
     else:
@@ -81,49 +81,82 @@ def create_table(table):
     conn.commit()
     conn.close()
 
+def get_last_id(table, id_name):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute(f"SELECT MAX({id_name}) FROM {table}")
+    result = cursor.fetchone()[0] # last row id
+    last_id = (int(result) + 1) if result is not None else 1  # Avoid NULL issue, id starts at 1
+
+    conn.close()
+
+    return last_id
+
 def insert_data(table, data1=None, data2=None):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     if table == "checkpoint":
-        query = f"INSERT OR IGNORE INTO {table} (image1, image2, filepath1, filepath2) VALUES (?, ?, ?, ?)"
+        last_id = get_last_id(table, "id")
+        query = f"INSERT INTO {table} (id, image1, image2, filepath1, filepath2) VALUES (?, ?, ?, ?, ?)"
 
         image1 = os.path.splitext(st.session_state.image_list1[st.session_state.img1])[0].split("-")[-1]
         image2 = os.path.splitext(st.session_state.image_list2[st.session_state.img2])[0].split("-")[-1]
         filepath1 = st.session_state.image_list1[st.session_state.img1]
         filepath2 = st.session_state.image_list2[st.session_state.img2]
 
-        cursor.execute(query, (image1, image2, filepath1, filepath2))
+        cursor.execute(query, (last_id, image1, image2, filepath1, filepath2))
+        
+        st.session_state.checkpoint_id = last_id
 
     elif table == "comparison":
-        query = f"INSERT INTO {table} (filepath1, filepath2) VALUES (?, ?)"
+        last_id = get_last_id(table, "id")
+        query = f"INSERT INTO {table} (id, filepath1, filepath2) VALUES (?, ?, ?)"
+
         max_length = max(len(data1), len(data2))
         # Extend the shorter list with None values
         data1.extend([None] * (max_length - len(data1)))
         data2.extend([None] * (max_length - len(data2)))
 
-        cursor.executemany(query, zip(data1, data2))
+        # Create tuples with unique IDs
+        rows = [(last_id + i, d1, d2) for i, (d1, d2) in enumerate(zip(data1, data2))]
+
+        cursor.executemany(query, rows)
 
     elif table == "video":
-        query = f"INSERT INTO {table} (location, camera_id, time) VALUES (?, ?, ?)"
+        last_id = get_last_id(table, "video_id")
+        query = f"INSERT INTO {table} (video_id, location, camera_id, time) VALUES (?, ?, ?, ?)"
 
-        cursor.execute(query, (st.session_state.location, st.session_state.camera_id, st.session_state.time))
-        st.session_state.video_id = cursor.lastrowid
+        cursor.execute(query, (last_id, st.session_state.location, st.session_state.camera_id, st.session_state.time))
+        st.session_state.video_id = last_id
 
     elif table == "image":
-        query = f"INSERT INTO {table} (video_id, frame_id) VALUES (?, ?)"
+        last_id = get_last_id(table, "image_id")
+        query = f"INSERT INTO {table} (image_id, video_id, frame_id) VALUES (?, ?, ?)"
 
-        cursor.execute(query, (st.session_state.video_id, data1))
-        st.session_state.image_id = cursor.lastrowid
+        cursor.execute(query, (last_id, st.session_state.video_id, data1))
+        st.session_state.image_id = last_id
 
     elif table == "crop_image":
-        query = f"INSERT INTO {table} (image_id, label_id) VALUES (?, ?)"
+        last_id = get_last_id(table, "crop_id")
+        query = f"INSERT INTO {table} (crop_id, image_id, label_id) VALUES (?, ?, ?)"
 
-        cursor.execute(query, (st.session_state.image_id, data1))
+        cursor.execute(query, (last_id, st.session_state.image_id, data1))
         
     else:
         raise ValueError("Invalid table name.")
+    
+    conn.commit()
+    conn.close()
 
+def undo_last_match(table):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    query = f"DELETE FROM {table} WHERE rowid = ?"
+    cursor.execute(query, (st.session_state.checkpoint_id,)) # tuple with comma
+    
     conn.commit()
     conn.close()
 

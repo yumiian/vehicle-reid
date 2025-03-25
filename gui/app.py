@@ -166,6 +166,7 @@ if task_type == "Image Comparison":
             st.session_state.bnext2_disabled = st.session_state.img2 == len(st.session_state.image_list2) - 1
             st.session_state.bback2_disabled = st.session_state.img2 <= 0
             st.session_state.bmatch_disabled = (len(st.session_state.image_list1) == 0) or (len(st.session_state.image_list2) == 0)
+            st.session_state.bundo_match_disabled = (len(st.session_state.undo_stack1) == 0) or (len(st.session_state.undo_stack2) == 0)
             st.session_state.bdel1_disabled = len(st.session_state.image_list1) == 0
             st.session_state.bdel2_disabled = len(st.session_state.image_list2) == 0
             st.session_state.bundo_del1_disabled = len(st.session_state.undo_stack1) == 0
@@ -180,6 +181,7 @@ if task_type == "Image Comparison":
 
             # Action buttons
             st.button("Match found", type="primary", use_container_width=True, disabled=st.session_state.bmatch_disabled, on_click=comparison.match)
+            st.button("Undo match found", use_container_width=True, disabled=st.session_state.bundo_match_disabled, on_click=comparison.undo_match)
 
             # Display images
             with st.container(border=True):
