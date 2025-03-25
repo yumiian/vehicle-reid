@@ -5,7 +5,7 @@ import database
 
 def batch_rename(input_dir, output_dir, old, new):
     for filename in os.listdir(input_dir):
-        if not filename.endswith(".jpg"):
+        if not filename.endswith(".png", ".jpg", ".jpeg"):
             continue
 
         old_id = os.path.splitext(filename)[0].split("-")[-1]

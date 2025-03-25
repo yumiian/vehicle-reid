@@ -54,7 +54,7 @@ def create_csv(image_path, output_path, image_type):
     with open(os.path.join(output_path, csv_filename), "w") as f:
         f.write("path,id,camera\n")
         for filename in os.listdir(image_path):
-            if not filename.endswith(".jpg"):
+            if not filename.endswith(".png", ".jpg", ".jpeg"):
                 continue
 
             parts = filename.split('-')
