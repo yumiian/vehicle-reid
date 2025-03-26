@@ -506,3 +506,9 @@ if task_type == "Database Management":
         df = database.db_to_df(table_selected) # convert database to dataframe
         edited_df = st.data_editor(df, use_container_width=True, disabled=("id", "video_id", "image_id", "crop_id")) # show all rows
         database.df_to_db(edited_df, table_selected) # apply changes to database
+
+    hehe = st.button("hehe")
+    if hehe:
+        database.sohai("video2", "video")
+        database.sohai("image2", "image")
+        database.sohai("crop_image2", "crop_image")

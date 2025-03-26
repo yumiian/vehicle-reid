@@ -293,3 +293,94 @@ def backup():
 
     source_conn.close()
     backup_conn.close()
+
+def fix_null(table, column_name):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute(f"""
+        UPDATE {table} 
+        SET {column_name} = rowid 
+        WHERE {column_name} IS NULL
+    """)
+
+    conn.commit()
+    conn.close()
+
+def sohai(table, old_table):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("PRAGMA foreign_keys = ON;")
+
+    if table == "checkpoint":
+        cursor.execute(f"DROP TABLE IF EXISTS {table};")
+
+        query = f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                id INTEGER PRIMARY KEY,
+                image1 CHAR(6) NOT NULL,
+                image2 CHAR(6) NOT NULL,
+                filepath1 TEXT NOT NULL,
+                filepath2 TEXT NOT NULL,
+                UNIQUE(image1, image2)
+                )
+        """
+    elif table == "comparison":
+        cursor.execute(f"DROP TABLE IF EXISTS {table};")
+
+        query = f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                id INTEGER PRIMARY KEY,
+                filepath1 TEXT,
+                filepath2 TEXT
+                )
+        """
+    elif table == "saved":
+        cursor.execute(f"DROP TABLE IF EXISTS {table};")
+
+        query = f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                id INTEGER PRIMARY KEY,
+                image1 CHAR(6) NOT NULL,
+                image2 CHAR(6) NOT NULL
+                )
+        """
+    elif table == "video2":
+        query = f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                video_id INTEGER PRIMARY KEY,
+                location VARCHAR(6) NOT NULL,
+                camera_id VARCHAR(6) NOT NULL,
+                time VARCHAR(6) NOT NULL
+                )
+        """
+    elif table == "image2":
+        query = f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                image_id INTEGER PRIMARY KEY,
+                video_id INTEGER NOT NULL,
+                frame_id CHAR(6) NOT NULL,
+                FOREIGN KEY (video_id) REFERENCES video(video_id) ON DELETE CASCADE ON UPDATE CASCADE
+                )
+        """
+    elif table == "crop_image2":
+        query = f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                crop_id INTEGER PRIMARY KEY,
+                image_id INTEGER NOT NULL,
+                label_id CHAR(6) NOT NULL,
+                FOREIGN KEY (image_id) REFERENCES image(image_id) ON DELETE CASCADE ON UPDATE CASCADE
+                )
+        """
+    else:
+        raise ValueError("Invalid table name.")
+
+    cursor.execute(query)
+
+    cursor.execute(f"INSERT INTO {table} SELECT * FROM {old_table}")
+    cursor.execute(f"DROP TABLE {old_table}")
+    cursor.execute(f"ALTER TABLE {table} RENAME TO {old_table}")
+
+    conn.commit()
+    conn.close()
