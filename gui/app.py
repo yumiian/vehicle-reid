@@ -130,7 +130,7 @@ if task_type == "Image Comparison":
         if os.path.isfile(db_path):
             st.button("Save progress", use_container_width=True, on_click=comparison.save)
             st.button("Resume from checkpoint", use_container_width=True, on_click=comparison.resume)
-            st.button("Delete checkpoint", use_container_width=True, on_click=comparison.reset)
+            st.button("Delete checkpoint", type="primary", use_container_width=True, on_click=comparison.reset)
         
     paths = [st.session_state.crop_dir1, st.session_state.crop_dir2]
     path_not_exists = any(not os.path.exists(path) for path in paths)
