@@ -126,6 +126,7 @@ if task_type == "Image Comparison":
         st.session_state.crop_dir2 = st.text_input("Second Crop Directory Path", value=os.path.join(output_dir, "output2/crops"), key="crop_dir2_input")
 
         save_both = st.checkbox("Save both results")
+        show_del_undo = st.checkbox('Show "Delete" & "Undo"')
 
         if os.path.isfile(db_path):
             st.button("Save progress", use_container_width=True, on_click=comparison.save)
@@ -192,15 +193,16 @@ if task_type == "Image Comparison":
             with st.container(border=True):
                 comparison.compare_images(st.session_state.image_list1[st.session_state.img1], st.session_state.image_list2[st.session_state.img2], img1_path, img2_path, label1_path, label2_path)
             
-            # Delete buttons
-            bcol5, bcol6 = st.columns(2, vertical_alignment="bottom")
-            bcol5.button("Delete", type="primary", use_container_width=True, key="bdel1", disabled=st.session_state.bdel1_disabled, on_click=comparison.del1)
-            bcol6.button("Delete", type="primary", use_container_width=True, key="bdel2", disabled=st.session_state.bdel2_disabled, on_click=comparison.del2)
+            if show_del_undo:
+                # Delete buttons
+                bcol5, bcol6 = st.columns(2, vertical_alignment="bottom")
+                bcol5.button("Delete", type="primary", use_container_width=True, key="bdel1", disabled=st.session_state.bdel1_disabled, on_click=comparison.del1)
+                bcol6.button("Delete", type="primary", use_container_width=True, key="bdel2", disabled=st.session_state.bdel2_disabled, on_click=comparison.del2)
 
-            # Undo buttons 
-            bcol7, bcol8 = st.columns(2, vertical_alignment="bottom")
-            bcol7.button("Undo", use_container_width=True, key="bundo_del1", disabled=st.session_state.bundo_del1_disabled, on_click=comparison.undo_del1)
-            bcol8.button("Undo", use_container_width=True, key="bundo_del2", disabled=st.session_state.bundo_del2_disabled, on_click=comparison.undo_del2)
+                # Undo buttons 
+                bcol7, bcol8 = st.columns(2, vertical_alignment="bottom")
+                bcol7.button("Undo", use_container_width=True, key="bundo_del1", disabled=st.session_state.bundo_del1_disabled, on_click=comparison.undo_del1)
+                bcol8.button("Undo", use_container_width=True, key="bundo_del2", disabled=st.session_state.bundo_del2_disabled, on_click=comparison.undo_del2)
 
 ########################
 
