@@ -54,7 +54,7 @@ def create_csv(image_path, output_path, image_type):
     with open(os.path.join(output_path, csv_filename), "w") as f:
         f.write("path,id,camera\n")
         for filename in os.listdir(image_path):
-            if not filename.endswith(".png", ".jpg", ".jpeg"):
+            if not filename.endswith((".png", ".jpg", ".jpeg")):
                 continue
 
             parts = filename.split('-')
@@ -86,24 +86,27 @@ def train_val_split(labels_path, split_ratio):
     train_df.to_csv(train_path, index=False)
     val_df.to_csv(val_path, index=False)
 
-def datasplit(crop_dir1, crop_dir2, output_path, split_ratio):
-    crop_files1 = image_listdir(crop_dir1)
-    crop_files2 = image_listdir(crop_dir2)
+def datasplit(crop_dir, output_path, split_ratio, max_attempts=10):
+    all_crop_files = []
+    for dir in os.listdir(crop_dir):
+        crop_files = image_listdir(os.path.join(crop_dir, dir))
+        all_crop_files += crop_files
 
-    crop_files = crop_files1 + crop_files2
-
-    random.shuffle(crop_files)
-    gallery = filter_files(crop_files)
-    random.shuffle(crop_files)
-    query = filter_files(crop_files)
-
-    # Recursively split the dataset until no duplicates are found
-    while not split(output_path, crop_files, gallery, query):
-        # Re-shuffle files and regenerate gallery and query
-        random.shuffle(crop_files)
-        gallery = filter_files(crop_files)
-        random.shuffle(crop_files)
-        query = filter_files(crop_files)
+    if not all_crop_files: # check if crop files list is empty
+        raise ValueError("No crop image files found in the specified directory.")
+    
+    for attempt in range(max_attempts):
+        # Shuffle and create initial splits
+        random.shuffle(all_crop_files)
+        gallery = filter_files(all_crop_files.copy())
+        random.shuffle(all_crop_files)
+        query = filter_files(all_crop_files.copy())
         
-    create_csv_labels(output_path)
-    train_val_split(output_path, split_ratio)
+        # Check if split is successful
+        if split(output_path, all_crop_files, gallery, query):
+            create_csv_labels(output_path)
+            train_val_split(output_path, split_ratio)
+            return
+    
+    # If max attempts reached without successful split
+    raise ValueError(f"Unable to create a valid split after {max_attempts} attempts. Consider adjusting filtering or dataset.")

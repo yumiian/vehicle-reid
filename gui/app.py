@@ -270,8 +270,7 @@ if task_type == "Data Augmentation":
 
 if task_type == "Dataset Split":
     with st.sidebar.container(border=True):
-        crop_dir1 = st.text_input("First Crop Directory Path", value=os.path.join(crops_dir, "crop"), key="crop_dir1_input")
-        crop_dir2 = st.text_input("Second Crop Directory Path", value=os.path.join(crops_dir, "crop2"), key="crop_dir2_input")
+        crop_dir = st.text_input("Crop Directory Path", value=crops_dir, key="crop_dir_input")
         dataset_name = st.text_input("Dataset Name", value="reid", key="dataset_name_input")
         split_ratio = st.slider("Split Ratio", min_value=0.0, max_value=1.0, step=0.05, value=0.75)
 
@@ -289,15 +288,13 @@ if task_type == "Dataset Split":
                 query_path = os.path.join(VeRi_dir, "name_query.txt")
                 query_csv_path = os.path.join(VeRi_dir, "query.csv")
 
-    paths = [crop_dir1, crop_dir2]
+    paths = [crop_dir]
     path_not_exists = any(not os.path.exists(path) for path in paths)
     run_button = st.sidebar.button("Run", type="primary", use_container_width=True, disabled=path_not_exists)
 
     # error check
-    if not os.path.isdir(crop_dir1):
-        st.error("First crop directory path is not found!")
-    if not os.path.isdir(crop_dir2):
-        st.error("Second crop directory path is not found!")
+    if not os.path.isdir(crop_dir):
+        st.error("Crop directory path is not found!")
 
     if run_button:
         with st.spinner("Running..."):
@@ -310,7 +307,7 @@ if task_type == "Dataset Split":
                     st.success(f"Datasets successfully created at {VeRi_dir}")
             else:
                 dataset_dir = helper.create_subfolders(datasets_dir, dataset_name)
-                datasplit.datasplit(crop_dir1, crop_dir2, dataset_dir, split_ratio)
+                datasplit.datasplit(crop_dir, dataset_dir, split_ratio)
                 st.success(f"Datasets successfully created at {dataset_dir}")
 
 ########################
