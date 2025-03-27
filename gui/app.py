@@ -41,11 +41,8 @@ st.set_page_config(
 st.sidebar.header("Tasks Selection")
 with st.sidebar.container(border=True):
     if "task_option" not in st.session_state:
-        st.session_state.task_option = ["Data Preparation", "Image Comparison", "Data Augmentation", "Dataset Split", "Model Training", "Model Testing", "Visualization"]
-    if "database_added" not in st.session_state:
-        if os.path.isfile(db_path):
-            st.session_state.task_option.append("Database Management")
-        st.session_state.database_added = True
+        st.session_state.task_option = ["Data Preparation", "Image Comparison", "Data Augmentation", "Dataset Split", "Model Training", "Model Testing", "Visualization", "Database Management"]
+
     task_type = st.radio("Tasks Selection", options=st.session_state.task_option, label_visibility="collapsed")
 
 ########################
@@ -502,7 +499,11 @@ if task_type == "Visualization":
 if task_type == "Database Management":
     with st.sidebar.container(border=True):
         if "db_table" not in st.session_state:
+            database.init_db_connection() # create database file if not exists
             st.session_state.db_table = database.get_table_names()
+
+        if not st.session_state.db_table: # check if list is empty
+            st.warning("Database is currently empty.")
         
         table_selected = st.radio("Edit Database Table", options=st.session_state.db_table, label_visibility="visible")
 
