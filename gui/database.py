@@ -9,8 +9,13 @@ import settings
 db_path = Path(settings.DATABASE_FILEPATH)
 backup_db_path = Path(settings.BACKUP_DB_FILEPATH)
 
+@st.cache_resource
+def init_db_connection():
+    conn = sqlite3.connect(db_path, check_same_thread=False)
+    return conn
+
 def create_table(table):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("PRAGMA foreign_keys = ON;")
@@ -79,22 +84,19 @@ def create_table(table):
     cursor.execute(query)
 
     conn.commit()
-    conn.close()
 
 def get_last_id(table, id_name):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
     cursor = conn.cursor()
 
     cursor.execute(f"SELECT MAX({id_name}) FROM {table}")
     result = cursor.fetchone()[0] # last row id
     last_id = (int(result) + 1) if result is not None else 1  # Avoid NULL issue, id starts at 1
 
-    conn.close()
-
     return last_id
 
 def insert_data(table, data1=None, data2=None):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
     cursor = conn.cursor()
 
     if table == "checkpoint":
@@ -148,20 +150,18 @@ def insert_data(table, data1=None, data2=None):
         raise ValueError("Invalid table name.")
     
     conn.commit()
-    conn.close()
 
 def undo_last_match(table):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
     cursor = conn.cursor()
 
     query = f"DELETE FROM {table} WHERE rowid = ?"
     cursor.execute(query, (st.session_state.checkpoint_id,)) # tuple with comma
     
     conn.commit()
-    conn.close()
 
 def compare_data(table_more, table_less, column_name):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
     conn.row_factory = sqlite3.Row # access data by column name
     cursor = conn.cursor()
 
@@ -173,12 +173,10 @@ def compare_data(table_more, table_less, column_name):
     cursor.execute(query)
     results = cursor.fetchall()
 
-    conn.close()
-
     return results
 
 def select_data(table, column_name):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
     cursor = conn.cursor()
 
     query = f"SELECT {column_name} FROM {table};"
@@ -186,29 +184,23 @@ def select_data(table, column_name):
     cursor.execute(query)
     results = cursor.fetchall()
 
-    conn.close()
-
     return results
 
 def check_table_exist(table):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
     cursor = conn.cursor()
 
     cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}';")
     exist = cursor.fetchone()
 
-    conn.close()
-
     return exist
 
 def check_table_empty(table):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
     cursor = conn.cursor()
     
     cursor.execute(f"SELECT COUNT(*) FROM {table};")
     row_count = cursor.fetchone()[0]
-
-    conn.close()
 
     if row_count == 0:
         return True
@@ -216,16 +208,15 @@ def check_table_empty(table):
     return False
     
 def drop_table(table):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
     cursor = conn.cursor()
 
     cursor.execute(f"DROP TABLE IF EXISTS {table};")
 
     conn.commit()
-    conn.close()
 
 def copy_table(source_table, dest_table, data):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
     cursor = conn.cursor()
 
     # cursor.execute(f"CREATE TABLE {dest_table} AS SELECT * FROM {source_table}")
@@ -236,35 +227,29 @@ def copy_table(source_table, dest_table, data):
     ''')
 
     conn.commit()
-    conn.close()
 
 def get_table_names():
-    conn = sqlite3.connect(db_path) 
+    conn = init_db_connection() 
     cursor = conn.cursor()
 
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name != 'sqlite_sequence';")  
     tables = [row[0] for row in cursor.fetchall()]
-
-    conn.close()
     
     return tables
 
 def db_to_df(table):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
 
     df = pd.read_sql_query(f"SELECT * FROM {table}", conn)
 
     conn.commit()
-    conn.close()
 
     return df
 
 def df_to_db(df, table):
-    conn = sqlite3.connect(db_path)
+    conn = init_db_connection()
 
     df.to_sql(name=table, con=conn, if_exists="replace", index=False)
-
-    conn.close()
 
 @st.dialog("Confirm delete database?")
 def dialog_delete_db():
@@ -283,13 +268,10 @@ def dialog_delete_db():
         st.success("Database successfully deleted. Please refresh the page.")
 
 def backup():
-    source_conn = sqlite3.connect(db_path)
+    source_conn = init_db_connection()
     backup_conn = sqlite3.connect(backup_db_path)
 
     with backup_conn:
         source_conn.backup(backup_conn)
 
     st.success("Database backup successfully!")
-
-    source_conn.close()
-    backup_conn.close()
