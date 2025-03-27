@@ -275,3 +275,9 @@ def backup():
         source_conn.backup(backup_conn)
 
     st.success("Database backup successfully!")
+
+    backup_conn.close()
+
+def refresh():
+    st.cache_resource.clear()
+    st.success("Database refreshed successfully!")
