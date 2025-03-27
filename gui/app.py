@@ -128,6 +128,8 @@ if task_type == "Image Comparison":
         st.session_state.crop_dir1 = st.text_input("First Crop Directory Path", value=os.path.join(output_dir, "output/crops"), key="crop_dir1_input")
         st.session_state.crop_dir2 = st.text_input("Second Crop Directory Path", value=os.path.join(output_dir, "output2/crops"), key="crop_dir2_input")
 
+        save_both = st.checkbox("Save both results")
+
         if os.path.isfile(db_path):
             st.button("Save progress", use_container_width=True, on_click=comparison.save)
             st.button("Resume from checkpoint", use_container_width=True, on_click=comparison.resume)
@@ -147,10 +149,16 @@ if task_type == "Image Comparison":
     if save_button:
         with st.spinner("Running..."):
             if comparison.save():
-                new_crop_dir1 = helper.create_subfolders(crops_dir, "crop")
-                new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
-                rename.rename_files(st.session_state.crop_dir1, st.session_state.crop_dir2, new_crop_dir1, new_crop_dir2)
-                st.success(f'Results successfully saved to "{new_crop_dir1}" and "{new_crop_dir2}".')
+                if save_both:
+                    new_crop_dir1 = helper.create_subfolders(crops_dir, "crop")
+                    new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
+                    rename.rename_files(st.session_state.crop_dir1, new_crop_dir1, st.session_state.crop_dir2, new_crop_dir2)
+                    st.success(f'Results successfully saved to "{new_crop_dir1}" and "{new_crop_dir2}".')
+                else: 
+                    # save only the second results
+                    new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
+                    rename.rename_files(st.session_state.crop_dir2, new_crop_dir2)
+                    st.success(f'Results successfully saved to "{new_crop_dir2}".')
     
     # Only show comparison interface if running
     if st.session_state.is_running:
