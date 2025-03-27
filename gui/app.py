@@ -504,7 +504,7 @@ if task_type == "Database Management":
         if not st.session_state.db_table: # check if list is empty
             st.warning("Database is currently empty.")
         
-        table_selected = st.radio("Edit Database Table", options=st.session_state.db_table, label_visibility="visible")
+        table_selected = st.radio("Edit Database Table", options=sorted(st.session_state.db_table), label_visibility="visible")
 
         st.button("Refresh database", use_container_width=True, on_click=database.refresh)
         st.button("Backup database", use_container_width=True, on_click=database.backup)
