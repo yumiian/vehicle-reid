@@ -112,7 +112,6 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
     # Streamlit
     progress_text = st.empty()
     progress_bar = st.progress(0)
-    st.write("Current Statistics:")
     stats_container = st.empty()
     progress_text.text(f"Processing video with {total_frames} frames at {fps} FPS...")
 
@@ -160,8 +159,8 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
         
         # Update Streamlit progress
         if st and frame_count % 10 == 0:  
-            progress_bar.progress(frame_count / total_frames)
             progress_text.text(f"Processing frame {frame_count}/{total_frames} ({frame_count/total_frames*100:.2f}%)")
+            progress_bar.progress(frame_count / total_frames)
             
             elapsed_time = time.time() - start_time
             estimated_total = (elapsed_time / frame_count) * total_frames
@@ -170,6 +169,7 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
             rem_min, rem_s = map(int, divmod(remaining_time, 60))
             
             stats_container.write(f"""
+            Current Statistics:
             | Metric | Value |
             | --- | --- |
             | Elapsed Time | {minutes:02d}:{seconds:02d} |
@@ -180,8 +180,9 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
     
     cap.release()
 
-    progress_bar.progress(1.0)
-    progress_text.text(f"Processing complete!")
+    progress_text.empty()
+    progress_bar.empty()
+    stats_container.empty()
 
     total_time = time.time() - start_time
     total_min, total_s = map(int, divmod(total_time, 60))
@@ -216,13 +217,13 @@ def save_crop(save_path):
     total_files = len(label_files)
     
     # Create a progress bar
+    progress_text = st.empty()
     progress_bar = st.progress(0)
-    status_text = st.empty()
     
     # Process each file with progress updates
-    for i, file in enumerate(label_files):
+    for i, file in enumerate(label_files, start=1):
         # Update status text
-        status_text.text(f"Creating crop image file {i+1}/{total_files}: {file}")
+        progress_text.text(f"Creating crop image file {i}/{total_files}: {file} ({i/total_files*100:.2f}%)")
         
         label_file = os.path.join(label_path, file)
         image_file = os.path.join(image_path, os.path.splitext(file)[0] + ".jpg")
@@ -237,7 +238,7 @@ def save_crop(save_path):
         crop_labels(image_file, label_file, crop_path)
         
         # Update progress bar
-        progress_bar.progress((i + 1) / total_files)
+        progress_bar.progress(i / total_files)
     
-    status_text.text("Crop image files created!")
-    progress_bar.progress(1.0)
+    progress_text.empty()
+    progress_bar.empty()
