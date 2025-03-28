@@ -180,9 +180,32 @@ def initialize_session_state():
     if "bundo_del2_disabled" not in st.session_state:
         st.session_state.bundo_del2_disabled = False
 
-def start_comparison(keep_checkpoint=False):
+def resume_checkpoint():
+    if not database.check_table_exist("checkpoint_info"):
+        return
+    
+    if database.check_table_empty("checkpoint_info"):
+        return
+    
+    st.session_state.crop_dir1 = database.select_data("checkpoint_info", "crop_dir1")[0][0] # access list of tuple [('data',)]
+    st.session_state.crop_dir2 = database.select_data("checkpoint_info", "crop_dir2")[0][0]
+    st.session_state.img1 = database.select_data("checkpoint_info", "index1")[0][0]
+    st.session_state.img2 = database.select_data("checkpoint_info", "index2")[0][0]
+
+def update_checkpoint():
+    if database.check_table_exist("checkpoint_info"): # use the checkpoint saved directory instead of text input value
+        st.session_state.crop_dir1 = database.select_data("checkpoint_info", "crop_dir1")[0][0]
+        st.session_state.crop_dir2 = database.select_data("checkpoint_info", "crop_dir2")[0][0]
+
+    database.drop_table("checkpoint_info")
+    database.create_table("checkpoint_info")
+    database.insert_data("checkpoint_info")
+
+def start_comparison(keep_checkpoint=False, checkpoint=False):
     """Callback for the Run button"""
     try:
+        if checkpoint:
+            resume_checkpoint()
         # Initialize lists
         crop_files1 = image_listdir(st.session_state.crop_dir1)
         crop_files2 = image_listdir(st.session_state.crop_dir2)
@@ -196,7 +219,8 @@ def start_comparison(keep_checkpoint=False):
         database.insert_data("comparison", datalist1, datalist2)
 
         if not keep_checkpoint: # reset checkpoint
-            database.drop_table("checkpoint") 
+            database.drop_table("checkpoint")
+            database.drop_table("checkpoint_info")
 
         st.session_state.is_running = True
     except FileNotFoundError:
@@ -258,6 +282,8 @@ def undo_del2():
 def match():
     database.create_table("checkpoint")
     database.insert_data("checkpoint")
+
+    update_checkpoint()
     
     # remove both images as they are matched
     del1()
@@ -266,13 +292,17 @@ def match():
 def undo_match():
     database.undo_last_match("checkpoint")
 
+    update_checkpoint()
+
     undo_del1()
     undo_del2()
 
 def save():
     if not database.check_table_exist("checkpoint"):
         st.error("No progress to be saved.")
-        return False 
+        return False
+    
+    update_checkpoint()
 
     database.create_table("saved")
     database.copy_table("checkpoint", "saved", "id, image1, image2")
@@ -289,7 +319,7 @@ def resume():
         st.error("No recent checkpoint to resume from.")
         return
 
-    start_comparison(keep_checkpoint=True)
+    start_comparison(keep_checkpoint=True, checkpoint=True)
     filepath1 = database.compare_data("comparison", "checkpoint", "filepath1")
     filepath2 = database.compare_data("comparison", "checkpoint", "filepath2")
     st.session_state.image_list1 = [data["filepath1"] for data in filepath1]

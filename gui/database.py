@@ -78,6 +78,18 @@ def create_table(table):
                 FOREIGN KEY (image_id) REFERENCES image(image_id) ON DELETE CASCADE ON UPDATE CASCADE
                 )
         """
+    elif table == "checkpoint_info":
+        query = f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                id INTEGER PRIMARY KEY,
+                crop_dir1 TEXT NOT NULL,
+                crop_dir2 TEXT NOT NULL,
+                index1 INTEGER NOT NULL,
+                index2 INTEGER NOT NULL,
+                total1 INTEGER NOT NULL,
+                total2 INTEGER NOT NULL
+                )
+        """
     else:
         raise ValueError("Invalid table name.")
 
@@ -146,6 +158,13 @@ def insert_data(table, data1=None, data2=None):
 
         cursor.execute(query, (last_id, st.session_state.image_id, data1))
         
+    elif table == "checkpoint_info":
+        query = f"INSERT INTO {table} (id, crop_dir1, crop_dir2, index1, index2, total1, total2) VALUES (?, ?, ?, ?, ?, ?, ?)"
+
+        cursor.execute(query, (1, st.session_state.crop_dir1, st.session_state.crop_dir2, 
+                               st.session_state.img1, st.session_state.img2, 
+                               len(st.session_state.image_list1), len(st.session_state.image_list2)))
+
     else:
         raise ValueError("Invalid table name.")
     
