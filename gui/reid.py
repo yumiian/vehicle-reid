@@ -1,6 +1,9 @@
 import subprocess
 import streamlit as st
 import time
+import os
+
+from train import SCRIPT_DIR
 
 def initialize_session_state():
     if "process" not in st.session_state:
@@ -20,7 +23,7 @@ def stop_process():
         st.session_state.output_area.code(st.session_state.output_text, language="bash", height=700, wrap_lines=True) # display the output again
         st.error("Operation cancelled.")
 
-def write_terminal_output():
+def write_terminal_output(name):
     if st.session_state.process is None:
         st.error("Process is not found! Please try again.")
         return
@@ -46,6 +49,10 @@ def write_terminal_output():
     process.wait()
     if process.poll() is not None:
         st.session_state.process = None
+
+    # save the log file
+    with open(os.path.join(SCRIPT_DIR, "model", name, "log.txt"), "w") as file:
+        file.write(st.session_state.output_text)
 
 def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50", batchsize=32, total_epoch=60, 
           model="resnet_ibn", model_subtype="default", warm_epoch=0, save_freq=5, num_workers=2, lr=0.05,
@@ -81,7 +88,7 @@ def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50",
     st.session_state.output_text = ""
 
     st.session_state.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-    write_terminal_output()
+    write_terminal_output(name)
 
 def test(file_path, data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint, batchsize=32, eval_gpu=False):
     command = [
