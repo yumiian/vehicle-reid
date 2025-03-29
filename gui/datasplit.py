@@ -2,6 +2,7 @@ import os
 import shutil
 import random
 import pandas as pd
+import streamlit as st
 
 def image_listdir(path):
     return sorted([os.path.join(path, f) for f in os.listdir(path) if f.endswith(('png', 'jpg', 'jpeg'))])
@@ -31,10 +32,6 @@ def split(output_path, files, gallery, query):
     gallery_path = os.path.join(output_path, "gallery")
     query_path = os.path.join(output_path, "query")
 
-    # make sure there is no duplicates on both lists
-    if [x for x in gallery if x in query]:
-        return False
-    
     # remove gallery and query files from all files to create train files
     train = [y for y in files if y not in gallery and y not in query]
 
@@ -86,27 +83,55 @@ def train_val_split(labels_path, split_ratio):
     train_df.to_csv(train_path, index=False)
     val_df.to_csv(val_path, index=False)
 
-def datasplit(crop_dir, output_path, split_ratio, max_attempts=10):
+def datasplit(crop_dir, output_path, split_ratio, seed):
+    progress_text = st.empty()
+    progress_bar = st.progress(0)
+
+    progress_text.write("Collecting image files...")
+
     all_crop_files = []
     for dir in os.listdir(crop_dir):
         crop_files = image_listdir(os.path.join(crop_dir, dir))
         all_crop_files += crop_files
 
     if not all_crop_files: # check if crop files list is empty
-        raise ValueError("No crop image files found in the specified directory.")
+        st.error("No crop image files found in the specified directory.")
     
-    for attempt in range(max_attempts):
-        # Shuffle and create initial splits
-        random.shuffle(all_crop_files)
-        gallery = filter_files(all_crop_files.copy())
-        random.shuffle(all_crop_files)
-        query = filter_files(all_crop_files.copy())
-        
-        # Check if split is successful
-        if split(output_path, all_crop_files, gallery, query):
-            create_csv_labels(output_path)
-            train_val_split(output_path, split_ratio)
-            return
+    progress_text.write(f"Found {len(all_crop_files)} image files.")
+    progress_bar.progress(0.1)
     
-    # If max attempts reached without successful split
-    raise ValueError(f"Unable to create a valid split after {max_attempts} attempts. Consider adjusting filtering or dataset.")
+    random.seed(seed)
+    random.shuffle(all_crop_files)
+
+    progress_text.write("Filtering files...")
+    progress_bar.progress(0.2)
+    
+    # Filter files for both gallery and query, but ensure they're separate sets
+    all_filtered_files = filter_files(all_crop_files.copy())
+    gallery_size = len(all_filtered_files) // 3
+
+    progress_text.write("Creating gallery and query sets...")
+    progress_bar.progress(0.4)
+    
+    # Split into non-overlapping sets
+    gallery = all_filtered_files[:gallery_size]
+    query = all_filtered_files[gallery_size:2*gallery_size]
+
+    progress_text.write("Splitting dataset into train, gallery and query sets...")
+    progress_bar.progress(0.6)
+
+    if split(output_path, all_crop_files, gallery, query):
+        progress_text.write("Creating CSV labels...")
+        progress_bar.progress(0.8)
+
+        create_csv_labels(output_path)
+
+        progress_text.write("Creating train and validation split...")
+        progress_bar.progress(0.9)
+
+        train_val_split(output_path, split_ratio)
+    else:
+        st.error("Split operation failed unexpectedly.")
+    
+    progress_text.empty()
+    progress_bar.empty()

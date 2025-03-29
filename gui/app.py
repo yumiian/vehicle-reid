@@ -278,7 +278,8 @@ if task_type == "Dataset Split":
     with st.sidebar.container(border=True):
         crop_dir = st.text_input("Crop Directory Path", value=crops_dir, key="crop_dir_input")
         dataset_name = st.text_input("Dataset Name", value="reid", key="dataset_name_input")
-        split_ratio = st.slider("Split Ratio", min_value=0.0, max_value=1.0, step=0.05, value=0.75)
+        split_ratio = st.slider("Split Ratio", help="Train & Validation Split Ratio", min_value=0.0, max_value=1.0, step=0.05, value=0.75)
+        seed = st.number_input(label="Set random seed", value=42)
 
         custom_dataset = st.checkbox("Custom Dataset")
         if custom_dataset:
@@ -313,7 +314,7 @@ if task_type == "Dataset Split":
                     st.success(f"Datasets successfully created at {VeRi_dir}")
             else:
                 dataset_dir = helper.create_subfolders(datasets_dir, dataset_name)
-                datasplit.datasplit(crop_dir, dataset_dir, split_ratio)
+                datasplit.datasplit(crop_dir, dataset_dir, split_ratio, seed)
                 st.success(f"Datasets successfully created at {dataset_dir}")
 
 ########################
