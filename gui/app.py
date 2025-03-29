@@ -403,6 +403,7 @@ if task_type == "Model Testing":
         gallery_csv_path = os.path.join(data_dir, "gallery.csv")
         
         model_dir = st.text_input("Model Directory Path:", value="model/resnet50", help="Path to the model root directory path")
+        model_name = os.path.basename(model_dir)
         model_opts = os.path.join(model_dir, "opts.yaml")
         checkpoint = st.text_input("Model pth Filename", value="net_59.pth", help="Model pth file")
         checkpoint = os.path.join(model_dir, checkpoint)
@@ -436,10 +437,10 @@ if task_type == "Model Testing":
                 test_result_path = os.path.join(model_dir, "train.jpg")
                 st.image(test_result_path)
             with st.container(border=True):
-                stdout, stderr = reid.test("test.py", data_dir=data_dir, query_csv_path=query_csv_path,
-                                        gallery_csv_path=gallery_csv_path, model_opts=model_opts,
-                                        checkpoint=checkpoint, batchsize=batchsize, eval_gpu=eval_gpu)
-                st.text(stdout + stderr)
+                reid.initialize_session_state()
+                reid.test("test.py", data_dir=data_dir, query_csv_path=query_csv_path,
+                           gallery_csv_path=gallery_csv_path, model_opts=model_opts,
+                           checkpoint=checkpoint, name=model_name, batchsize=batchsize, eval_gpu=eval_gpu)
         st.success("Done!")
 
 ########################

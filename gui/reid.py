@@ -23,7 +23,7 @@ def stop_process():
         st.session_state.output_area.code(st.session_state.output_text, language="bash", height=700, wrap_lines=True) # display the output again
         st.error("Operation cancelled.")
 
-def write_terminal_output(name):
+def write_terminal_output(process_type, name):
     if st.session_state.process is None:
         st.error("Process is not found! Please try again.")
         return
@@ -50,8 +50,17 @@ def write_terminal_output(name):
     if process.poll() is not None:
         st.session_state.process = None
 
+    log_dir = os.path.join(SCRIPT_DIR, "model", name)
+
+    # Find the next available filename
+    i = 1
+    while os.path.exists(os.path.join(log_dir, f"log_{process_type}_{i}.txt")):
+        i += 1
+
+    log_filename = f"log_{process_type}_{i}.txt"
+
     # save the log file
-    with open(os.path.join(SCRIPT_DIR, "model", name, "log.txt"), "w") as file:
+    with open(os.path.join(log_dir, log_filename), "w") as file:
         file.write(st.session_state.output_text)
 
 def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50", batchsize=32, total_epoch=60, 
@@ -88,9 +97,9 @@ def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50",
     st.session_state.output_text = ""
 
     st.session_state.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-    write_terminal_output(name)
+    write_terminal_output("train", name)
 
-def test(file_path, data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint, batchsize=32, eval_gpu=False):
+def test(file_path, data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint, name, batchsize=32, eval_gpu=False):
     command = [
         "python3", file_path,
         "--data_dir", data_dir,
@@ -103,7 +112,9 @@ def test(file_path, data_dir, query_csv_path, gallery_csv_path, model_opts, chec
 
     if eval_gpu: command.append("--eval_gpu")
 
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    stdout, stderr = process.communicate()
+    # Reset stop flag and clear previous output
+    st.session_state.process_stop = False
+    st.session_state.output_text = ""
 
-    return stdout, stderr
+    st.session_state.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+    write_terminal_output("test", name)
