@@ -371,6 +371,7 @@ if task_type == "Model Training":
     paths = [data_dir, train_csv_path, val_csv_path]
     path_not_exists = any(not os.path.exists(path) for path in paths)
     run_button = st.sidebar.button("Run", type="primary", use_container_width=True, disabled=path_not_exists)
+    cancel_button = st.sidebar.button("Cancel", use_container_width=True, on_click=reid.stop_process)
 
     # error check
     if not os.path.isdir(data_dir):
@@ -383,14 +384,14 @@ if task_type == "Model Training":
     if run_button:
         with st.spinner("Running..."):
             with st.container(border=True):
-                stdout, stderr = reid.train("train.py", data_dir=data_dir, train_csv_path=train_csv_path, 
-                                            val_csv_path=val_csv_path, name=name, batchsize=batchsize, 
-                                            total_epoch=total_epoch, model=model, model_subtype=model_subtype,
-                                            warm_epoch=warm_epoch, save_freq=save_freq, num_workers=num_workers,
-                                            lr=lr, erasing_p=erasing_p, fp16=fp16, cosine=cosine,
-                                            color_jitter=color_jitter, triplet=triplet, contrast=contrast,
-                                            sphere=sphere, circle=circle)
-                st.text(stdout + stderr)
+                reid.initialize_session_state()
+                reid.train("train.py", data_dir=data_dir, train_csv_path=train_csv_path, 
+                            val_csv_path=val_csv_path, name=name, batchsize=batchsize, 
+                            total_epoch=total_epoch, model=model, model_subtype=model_subtype,
+                            warm_epoch=warm_epoch, save_freq=save_freq, num_workers=num_workers,
+                            lr=lr, erasing_p=erasing_p, fp16=fp16, cosine=cosine,
+                            color_jitter=color_jitter, triplet=triplet, contrast=contrast,
+                            sphere=sphere, circle=circle)
         st.success("Done!")
 
 ########################
