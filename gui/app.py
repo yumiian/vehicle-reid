@@ -163,6 +163,10 @@ if task_type == "Image Comparison":
         if len(st.session_state.image_list1) == 0 or len(st.session_state.image_list2) == 0:
             st.success("Comparison completed! Remember to save your results :)")
         else:
+            # prevent list index out of range error
+            st.session_state.img1 = min(st.session_state.img1, len(st.session_state.image_list1) - 1)
+            st.session_state.img2 = min(st.session_state.img2, len(st.session_state.image_list2) - 1)
+
             img1_path, label1_path = comparison.get_image_label_path(st.session_state.image_list1[st.session_state.img1])
             img2_path, label2_path = comparison.get_image_label_path(st.session_state.image_list2[st.session_state.img2])
 
