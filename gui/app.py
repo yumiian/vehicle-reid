@@ -215,6 +215,7 @@ if task_type == "Data Augmentation":
         transform_list = []
 
         image_path = st.text_input("Images Directory Path", value=os.path.join(crops_dir, "crop"), key="augment_images_path")
+        output_path = st.text_input("Output Directory Path", value=os.path.join(crops_dir, "_crop"), key="augment_output_path")
 
         st.write("Apply augmentation techniques:")
         horflip = st.checkbox("HorizontalFlip", help="Flip the input horizontally around the y-axis.")
@@ -269,7 +270,7 @@ if task_type == "Data Augmentation":
 
     if run_button:
         with st.spinner("Running..."):
-            augment.augment(transform_list, seed, image_path)
+            augment.augment(transform_list, seed, image_path, output_path)
         st.success(f'Images successfully augmented in "{image_path}"')
 
 ########################
