@@ -14,7 +14,7 @@ def get_abbreviation(transform_list):
 
 def augment(transform_list, seed, image_path, output_path):
     os.makedirs(output_path, exist_ok=True)
-    
+
     transform = A.Compose(transform_list, seed=seed, strict=True)
     abbr = get_abbreviation(transform_list)
 
@@ -29,4 +29,3 @@ def augment(transform_list, seed, image_path, output_path):
         
         output_filename = os.path.join(output_path, f"{abbr}{filename}")
         cv2.imwrite(output_filename, augmented_image)
-        break
