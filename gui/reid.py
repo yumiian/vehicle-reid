@@ -2,8 +2,10 @@ import subprocess
 import streamlit as st
 import time
 import os
+from pathlib import Path
 
-from train import SCRIPT_DIR
+# Get the parent directory of the current file
+SCRIPT_DIR = Path(__file__).parent.parent
 
 def initialize_session_state():
     if "process" not in st.session_state:
