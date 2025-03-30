@@ -271,7 +271,7 @@ if task_type == "Data Augmentation":
     if run_button:
         with st.spinner("Running..."):
             augment.augment(transform_list, seed, image_path, output_path)
-        st.success(f'Images successfully augmented in "{image_path}"')
+        st.success(f'Images successfully augmented in "{output_path}"')
 
 ########################
 
