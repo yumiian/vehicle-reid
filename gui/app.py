@@ -13,7 +13,7 @@ import rename
 import datasplit
 import reid
 import visualization
-import custom_dataset
+import prepare_custom
 import database
 import augment
 
@@ -334,17 +334,17 @@ if task_type == "Dataset Split":
                 st.success(f"Datasets successfully created at {dataset_dir}")
                 
             if dataset_selection == "VeRi-776":
-                custom_dataset.txt_to_csv("VeRi", "image_train", train_txt_path, train_csv_path)
-                custom_dataset.train_val_split(dataset_dir, split_ratio, 42)
-                custom_dataset.txt_to_csv("VeRi", "image_test", gallery_txt_path, gallery_csv_path)
-                custom_dataset.txt_to_csv("VeRi", "image_query", query_txt_path, query_csv_path)
+                prepare_custom.txt_to_csv("VeRi", "image_train", train_txt_path, train_csv_path)
+                prepare_custom.train_val_split(dataset_dir, split_ratio, 42)
+                prepare_custom.txt_to_csv("VeRi", "image_test", gallery_txt_path, gallery_csv_path)
+                prepare_custom.txt_to_csv("VeRi", "image_query", query_txt_path, query_csv_path)
                 st.success(f"Datasets successfully created at {dataset_dir}")
             
             if dataset_selection == "VRIC":
-                custom_dataset.txt_to_csv("VRIC", "train_images", train_txt_path, train_csv_path)
-                custom_dataset.train_val_split(dataset_dir, split_ratio, 42)
-                custom_dataset.txt_to_csv("VRIC", "gallery_images", gallery_txt_path, gallery_csv_path)
-                custom_dataset.txt_to_csv("VRIC", "probe_images", query_txt_path, query_csv_path)
+                prepare_custom.txt_to_csv("VRIC", "train_images", train_txt_path, train_csv_path)
+                prepare_custom.train_val_split(dataset_dir, split_ratio, 42)
+                prepare_custom.txt_to_csv("VRIC", "gallery_images", gallery_txt_path, gallery_csv_path)
+                prepare_custom.txt_to_csv("VRIC", "probe_images", query_txt_path, query_csv_path)
                 st.success(f"Datasets successfully created at {dataset_dir}")
 
 ########################
