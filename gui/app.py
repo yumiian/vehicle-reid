@@ -13,7 +13,7 @@ import rename
 import datasplit
 import reid
 import visualization
-import prepare_VeRi
+import custom_dataset
 import database
 import augment
 
@@ -287,18 +287,30 @@ if task_type == "Dataset Split":
 
         custom_dataset = st.checkbox("Custom Dataset")
         if custom_dataset:
-            dataset_selection = st.radio("Custom Dataset", options=["VeRi-776"], label_visibility="collapsed")
+            dataset_selection = st.radio("Custom Dataset", options=["VeRi-776", "VRIC"], label_visibility="collapsed")
             if dataset_selection == "VeRi-776":
-                VeRi_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "VeRi"))
+                dataset_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "VeRi"))
                 split_ratio = st.slider("Split Ratio", help="Train & Validation Split Ratio", min_value=0.0, max_value=1.0, value=0.75, step=0.05)
-                train_path = os.path.join(VeRi_dir, "name_train.txt")
-                train_csv_path = os.path.join(VeRi_dir, "train.csv")
+                train_txt_path = os.path.join(dataset_dir, "name_train.txt")
+                train_csv_path = os.path.join(dataset_dir, "train.csv")
 
-                test_path = os.path.join(VeRi_dir, "name_test.txt")
-                test_csv_path = os.path.join(VeRi_dir, "gallery.csv")
+                gallery_txt_path = os.path.join(dataset_dir, "name_test.txt")
+                gallery_csv_path = os.path.join(dataset_dir, "gallery.csv")
 
-                query_path = os.path.join(VeRi_dir, "name_query.txt")
-                query_csv_path = os.path.join(VeRi_dir, "query.csv")
+                query_txt_path = os.path.join(dataset_dir, "name_query.txt")
+                query_csv_path = os.path.join(dataset_dir, "query.csv")
+
+            if dataset_selection == "VRIC":
+                dataset_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "VRIC"))
+                split_ratio = st.slider("Split Ratio", help="Train & Validation Split Ratio", min_value=0.0, max_value=1.0, value=0.75, step=0.05)
+                train_txt_path = os.path.join(dataset_dir, "vric_train.txt")
+                train_csv_path = os.path.join(dataset_dir, "train.csv")
+
+                gallery_txt_path = os.path.join(dataset_dir, "vric_gallery.txt")
+                gallery_csv_path = os.path.join(dataset_dir, "gallery.csv")
+
+                query_txt_path = os.path.join(dataset_dir, "vric_probe.txt")
+                query_csv_path = os.path.join(dataset_dir, "query.csv")
 
     paths = [crop_dir]
     button_disabled = any(not os.path.exists(path) for path in paths)
@@ -316,16 +328,23 @@ if task_type == "Dataset Split":
 
     if run_button:
         with st.spinner("Running..."):
-            if custom_dataset:
-                if dataset_selection == "VeRi-776":
-                    prepare_VeRi.txt_to_csv(train_path, train_csv_path, "image_train")
-                    prepare_VeRi.train_val_split(VeRi_dir, split_ratio)
-                    prepare_VeRi.txt_to_csv(test_path, test_csv_path, "image_test")
-                    prepare_VeRi.txt_to_csv(query_path, query_csv_path, "image_query")
-                    st.success(f"Datasets successfully created at {VeRi_dir}")
-            else:
+            if not custom_dataset:
                 dataset_dir = helper.create_subfolders(datasets_dir, dataset_name)
                 datasplit.datasplit(crop_dir, dataset_dir, train_ratio, val_ratio, test_ratio, random_state)
+                st.success(f"Datasets successfully created at {dataset_dir}")
+                
+            if dataset_selection == "VeRi-776":
+                custom_dataset.txt_to_csv("VeRi", "image_train", train_txt_path, train_csv_path)
+                custom_dataset.train_val_split(dataset_dir, split_ratio, 42)
+                custom_dataset.txt_to_csv("VeRi", "image_test", gallery_txt_path, gallery_csv_path)
+                custom_dataset.txt_to_csv("VeRi", "image_query", query_txt_path, query_csv_path)
+                st.success(f"Datasets successfully created at {dataset_dir}")
+            
+            if dataset_selection == "VRIC":
+                custom_dataset.txt_to_csv("VRIC", "train_images", train_txt_path, train_csv_path)
+                custom_dataset.train_val_split(dataset_dir, split_ratio, 42)
+                custom_dataset.txt_to_csv("VRIC", "gallery_images", gallery_txt_path, gallery_csv_path)
+                custom_dataset.txt_to_csv("VRIC", "probe_images", query_txt_path, query_csv_path)
                 st.success(f"Datasets successfully created at {dataset_dir}")
 
 ########################
