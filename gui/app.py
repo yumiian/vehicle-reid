@@ -1,5 +1,6 @@
 from pathlib import Path
 import streamlit as st
+import numpy as np
 import pandas as pd
 import os
 import albumentations as A
@@ -279,14 +280,17 @@ if task_type == "Dataset Split":
     with st.sidebar.container(border=True):
         crop_dir = st.text_input("Crop Directory Path", value=crops_dir, key="crop_dir_input")
         dataset_name = st.text_input("Dataset Name", value="reid", key="dataset_name_input")
-        split_ratio = st.slider("Split Ratio", help="Train & Validation Split Ratio", min_value=0.0, max_value=1.0, step=0.05, value=0.75)
-        seed = st.number_input(label="Set random seed", value=42)
+        train_ratio = st.slider("Training Set Ratio", min_value=0.05, max_value=1.0, value=0.6, step=0.05)
+        val_ratio = st.slider("Validation Set Ratio", min_value=0.05, max_value=1.0, value=0.2, step=0.05)
+        test_ratio = st.slider("Test Set Ratio", min_value=0.05, max_value=1.0, value=0.2, step=0.05)
+        random_state = st.number_input(label="Set Random State", value=42)
 
         custom_dataset = st.checkbox("Custom Dataset")
         if custom_dataset:
             dataset_selection = st.radio("Custom Dataset", options=["VeRi-776"], label_visibility="collapsed")
             if dataset_selection == "VeRi-776":
                 VeRi_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "VeRi"))
+                split_ratio = st.slider("Split Ratio", help="Train & Validation Split Ratio", min_value=0.0, max_value=1.0, value=0.75, step=0.05)
                 train_path = os.path.join(VeRi_dir, "name_train.txt")
                 train_csv_path = os.path.join(VeRi_dir, "train.csv")
 
@@ -297,25 +301,31 @@ if task_type == "Dataset Split":
                 query_csv_path = os.path.join(VeRi_dir, "query.csv")
 
     paths = [crop_dir]
-    path_not_exists = any(not os.path.exists(path) for path in paths)
-    run_button = st.sidebar.button("Run", type="primary", use_container_width=True, disabled=path_not_exists)
+    button_disabled = any(not os.path.exists(path) for path in paths)
 
     # error check
     if not os.path.isdir(crop_dir):
         st.error("Crop directory path is not found!")
+
+    total_ratio = train_ratio + val_ratio + test_ratio
+    if not np.isclose(total_ratio, 1.0):
+        st.warning(f"Total split ratios must sum to 1.0! Current ratio: {total_ratio:.2f}")
+        button_disabled = True # disable the button
+
+    run_button = st.sidebar.button("Run", type="primary", use_container_width=True, disabled=button_disabled)
 
     if run_button:
         with st.spinner("Running..."):
             if custom_dataset:
                 if dataset_selection == "VeRi-776":
                     prepare_VeRi.txt_to_csv(train_path, train_csv_path, "image_train")
-                    datasplit.train_val_split(VeRi_dir, split_ratio)
+                    prepare_VeRi.train_val_split(VeRi_dir, split_ratio)
                     prepare_VeRi.txt_to_csv(test_path, test_csv_path, "image_test")
                     prepare_VeRi.txt_to_csv(query_path, query_csv_path, "image_query")
                     st.success(f"Datasets successfully created at {VeRi_dir}")
             else:
                 dataset_dir = helper.create_subfolders(datasets_dir, dataset_name)
-                datasplit.datasplit(crop_dir, dataset_dir, split_ratio, seed)
+                datasplit.datasplit(crop_dir, dataset_dir, train_ratio, val_ratio, test_ratio, random_state)
                 st.success(f"Datasets successfully created at {dataset_dir}")
 
 ########################

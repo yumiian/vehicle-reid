@@ -1,137 +1,104 @@
 import os
 import shutil
-import random
 import pandas as pd
+from sklearn.model_selection import train_test_split
 import streamlit as st
 
-def image_listdir(path):
-    return sorted([os.path.join(path, f) for f in os.listdir(path) if f.endswith(('png', 'jpg', 'jpeg'))])
+def get_all_images(images_dir):
+    data = []
 
-def filter_files(files):
-    used_id = []
-    unique_files = []
-
-    for filename in files:
-        id = os.path.splitext(filename)[0].split("-")[-1]
-
-        if id in used_id:
-            continue
-
-        unique_files.append(filename)
-
-        used_id.append(id)
-
-    return unique_files
-
-def move_files(input_file_list, output_path):
-    for f in input_file_list:
-        shutil.copy(f, os.path.join(output_path, os.path.basename(f)))
-
-def split(output_path, files, gallery, query):
-    train_path = os.path.join(output_path, "train")
-    gallery_path = os.path.join(output_path, "gallery")
-    query_path = os.path.join(output_path, "query")
-
-    # remove gallery and query files from all files to create train files
-    train = [y for y in files if y not in gallery and y not in query]
-
-    os.makedirs(train_path, exist_ok=True)
-    os.makedirs(gallery_path, exist_ok=True)
-    os.makedirs(query_path, exist_ok=True)
-
-    move_files(train, train_path)
-    move_files(gallery, gallery_path)
-    move_files(query, query_path)
-
-    # no duplicates found
-    return True
-
-def create_csv(image_path, output_path, image_type):
-    csv_filename = image_type + ".csv"
-    with open(os.path.join(output_path, csv_filename), "w") as f:
-        f.write("path,id,camera\n")
-        for filename in os.listdir(image_path):
-            if not filename.endswith((".png", ".jpg", ".jpeg")):
+    for root, _, files in os.walk(images_dir):
+        for file in files:
+            if not file.endswith((".jpg", ".jpeg", ".png")):
                 continue
 
-            parts = filename.split('-')
-            id = parts[-1].split('.')[0] 
-            camera = parts[1]
+            parts = file.split("-")
+            if len(parts) >= 5:
+                camera_id = parts[1]
+                vehicle_id = parts[4].split(".")[0]
+                img_path = os.path.join(root, file)
+                data.append({
+                    "path": img_path,
+                    "id": vehicle_id,
+                    "camera": camera_id
+                })
 
-            f.write(f"{image_type}/{filename},{id},{camera}\n")
+    df = pd.DataFrame(data)
 
-def create_csv_labels(output_path):
-    train_path = os.path.join(output_path, "train")
-    gallery_path = os.path.join(output_path, "gallery")
-    query_path = os.path.join(output_path, "query")
+    return df
 
-    create_csv(train_path, output_path, "train")
-    create_csv(gallery_path, output_path, "gallery")
-    create_csv(query_path, output_path, "query")
+def subset_split(df, train_ratio=0.6, val_ratio=0.2, test_ratio=0.2, random_state=42):
+    unique_id = df["id"].unique()
 
-def train_val_split(labels_path, split_ratio):
-    train_path = os.path.join(labels_path, "train.csv")
-    val_path = os.path.join(labels_path, "val.csv")
+    train_val_ids, test_ids = train_test_split(unique_id, test_size=test_ratio, random_state=random_state)
 
-    df = pd.read_csv(train_path, dtype={'id': str}) # Ensure 'id' is read as a string
-    random.seed(42)
-    train_size = int(split_ratio * len(df))
-    val_size = len(df) - train_size
-    val_idxes = random.sample(range(len(df)), val_size)
-    train_idxes = list(set(range(len(df))) - set(val_idxes))
-    train_df, val_df = df.loc[train_idxes], df.loc[val_idxes]
-    train_df.to_csv(train_path, index=False)
-    val_df.to_csv(val_path, index=False)
+    train_ids, val_ids = train_test_split(train_val_ids, test_size=val_ratio / (train_ratio + val_ratio), random_state=random_state)
 
-def datasplit(crop_dir, output_path, split_ratio, seed):
+    train_df = df[df["id"].isin(train_ids)]
+    val_df = df[df["id"].isin(val_ids)]
+    test_df = df[df["id"].isin(test_ids)]
+
+    return train_df, val_df, test_df
+
+def split_gallery_query(test_df, random_state=42):
+    gallery_list = []
+    query_list = []
+    
+    for _, group in test_df.groupby("id"):  
+        if len(group["camera"].unique()) > 1:  
+            query_sample = group.sample(n=1, random_state=random_state)  # Randomly select one sample as query
+            query_list.append(query_sample)
+            gallery_list.append(group.drop(query_sample.index))  # Remove query sample from gallery
+        else:
+            gallery_list.append(group) # If only one camera exists, assign all to gallery (avoiding empty gallery)
+
+    gallery_df = pd.concat(gallery_list) if gallery_list else pd.DataFrame(columns=test_df.columns)
+    query_df = pd.concat(query_list) if query_list else pd.DataFrame(columns=test_df.columns)
+
+    return gallery_df, query_df
+
+def copy_files(df, image_type, output_dir, progress_text, progress_bar, progress_now):
+    output_subdir = os.path.join(output_dir, image_type)
+    os.makedirs(output_subdir, exist_ok=True)
+
+    source_path = df["path"].tolist()
+
+    output_filename = [os.path.join(output_subdir, os.path.basename(path)) for path in source_path]
+
+    total_files = len(source_path)
+
+    for i, (src, dest) in enumerate(zip(source_path, output_filename), start=1):
+        filename = os.path.basename(src)
+        progress = progress_now + (0.2 * (i / total_files))
+        progress_text.text(f"Copying files for {image_type} set {i}/{total_files}: {filename} ({progress*100:.2f}%)")
+        shutil.copy(src, dest)
+        progress_bar.progress(progress)
+    
+    # create CSV files
+    image_filepath = [os.path.join(image_type, os.path.basename(path)) for path in source_path] # "query/KJ-C1-0800-frame_000018-000002.jpg"
+    df["path"] = image_filepath # replace with new filepath 
+    df.to_csv(os.path.join(output_dir, f"{image_type}.csv"), index=False)
+
+def datasplit(images_dir, output_dir, train_ratio=0.6, val_ratio=0.2, test_ratio=0.2, random_state=42):
     progress_text = st.empty()
     progress_bar = st.progress(0)
 
-    progress_text.write("Collecting image files...")
+    progress_text.text("Scanning images... (0.00%)")
+    progress_bar.progress(0)
+    df = get_all_images(images_dir)
 
-    all_crop_files = []
-    for dir in os.listdir(crop_dir):
-        crop_files = image_listdir(os.path.join(crop_dir, dir))
-        all_crop_files += crop_files
+    progress_text.text("Splitting dataset into train, val, test set... (5.00%)")
+    progress_bar.progress(0.05)
+    train_df, val_df, test_df = subset_split(df, train_ratio, val_ratio, test_ratio, random_state)
 
-    if not all_crop_files: # check if crop files list is empty
-        st.error("No crop image files found in the specified directory.")
-    
-    progress_text.write(f"Found {len(all_crop_files)} image files.")
+    progress_text.text("Splitting dataset into gallery and query set... (10.00%)")
     progress_bar.progress(0.1)
-    
-    random.seed(seed)
-    random.shuffle(all_crop_files)
+    gallery_df, query_df = split_gallery_query(test_df, random_state)
 
-    progress_text.write("Filtering files...")
-    progress_bar.progress(0.2)
-    
-    # Filter files for both gallery and query, but ensure they're separate sets
-    all_filtered_files = filter_files(all_crop_files.copy())
-    gallery_size = len(all_filtered_files) // 3
+    copy_files(train_df, "train", output_dir, progress_text, progress_bar, 0.2)
+    copy_files(val_df, "val", output_dir, progress_text, progress_bar, 0.4)
+    copy_files(gallery_df, "gallery", output_dir, progress_text, progress_bar, 0.6)
+    copy_files(query_df, "query", output_dir, progress_text, progress_bar, 0.8)
 
-    progress_text.write("Creating gallery and query sets...")
-    progress_bar.progress(0.4)
-    
-    # Split into non-overlapping sets
-    gallery = all_filtered_files[:gallery_size]
-    query = all_filtered_files[gallery_size:2*gallery_size]
-
-    progress_text.write("Splitting dataset into train, gallery and query sets...")
-    progress_bar.progress(0.6)
-
-    if split(output_path, all_crop_files, gallery, query):
-        progress_text.write("Creating CSV labels...")
-        progress_bar.progress(0.8)
-
-        create_csv_labels(output_path)
-
-        progress_text.write("Creating train and validation split...")
-        progress_bar.progress(0.9)
-
-        train_val_split(output_path, split_ratio)
-    else:
-        st.error("Split operation failed unexpectedly.")
-    
     progress_text.empty()
     progress_bar.empty()
