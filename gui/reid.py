@@ -87,7 +87,7 @@ def write_terminal_output(process_type, name):
     log_file.close()
 
 def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50", batchsize=32, total_epoch=60, 
-          model="resnet_ibn", model_subtype="default", warm_epoch=0, save_freq=5, num_workers=2, lr=0.05,
+          model="resnet_ibn", model_subtype="default", warm_epoch=0, save_freq=5, num_workers=2, lr=0.05, samples_per_class=1,
           erasing_p=0.5, fp16=False, cosine=False, color_jitter=False, triplet=False, contrast=False,
           sphere=False, circle=False):
     command = [
@@ -104,6 +104,7 @@ def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50",
         "--save_freq", str(save_freq),
         "--num_workers", str(num_workers),
         "--lr", str(lr),
+        "--samples_per_class", str(samples_per_class),
         "--erasing_p", str(erasing_p),
     ]
 

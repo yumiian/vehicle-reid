@@ -339,7 +339,7 @@ if task_type == "Model Training":
         name = st.text_input("Output Model Name", value="resnet50", help="Define custom output model name")
 
         batchsize = st.number_input("Batch Size", min_value=8, value=32, step=8)
-        total_epoch = st.number_input("Total Epoch", min_value=1, value=60)
+        total_epoch = st.number_input("Total Epoch", min_value=1, value=20)
 
         advanced = st.toggle("Advanced Settings")
 
@@ -354,10 +354,12 @@ if task_type == "Model Training":
             save_freq = st.number_input("Save Frequency", min_value=1, value=5)
             num_workers = st.number_input("Number of Workers", min_value=1, value=2)
             lr = st.number_input("Learning Rate", min_value=0.01, value=0.05)
+            samples_per_class = st.number_input("Samples per Class", min_value=1, value=1)
             erasing_p = st.slider("Random Erasing Probability", min_value=0.0, max_value=1.0, step=0.05, value=0.50)
             fp16 = st.checkbox("fp16", help="Use mixed precision training. This will occupy less memory in the forward pass, and will speed up training in some architectures (Nvidia A100, V100, etc.)")
             cosine = st.checkbox("Cosine", help="Use cosine learning rate")
             color_jitter = st.checkbox("Color jitter", help="Use color jitter in training")
+
             st.subheader("Loss Functions")
             triplet = st.checkbox("Triplet Loss", help="Use Triplet Loss function")
             contrast = st.checkbox("Contrastive Loss", help="Use Contrastive Loss function")
@@ -370,10 +372,12 @@ if task_type == "Model Training":
             save_freq=5
             num_workers=2
             lr=0.05
+            samples_per_class=1
             erasing_p=0.5
             fp16=False
             cosine=False
             color_jitter=False
+
             triplet=False
             contrast=False
             sphere=False
@@ -400,7 +404,7 @@ if task_type == "Model Training":
                             val_csv_path=val_csv_path, name=name, batchsize=batchsize, 
                             total_epoch=total_epoch, model=model, model_subtype=model_subtype,
                             warm_epoch=warm_epoch, save_freq=save_freq, num_workers=num_workers,
-                            lr=lr, erasing_p=erasing_p, fp16=fp16, cosine=cosine,
+                            lr=lr, samples_per_class=samples_per_class, erasing_p=erasing_p, fp16=fp16, cosine=cosine,
                             color_jitter=color_jitter, triplet=triplet, contrast=contrast,
                             sphere=sphere, circle=circle)
         st.success("Done!")
