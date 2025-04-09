@@ -124,7 +124,7 @@ def show_query_result(query_img, gallery_imgs, query_label, gallery_labels, imgs
         ax.set_xticks([], minor=True)
         ax.set_yticks([])
         ax.set_yticks([], minor=True)
-        ax.set_xlabel(str(round((score_labels[i]*100), 2)))
+        ax.set_xlabel(str(f"{round(score_labels[i] * 100, 2):.2f}"))
         for spine in [ax.spines.left, ax.spines.right, ax.spines.top, ax.spines.bottom]:
             spine.set(visible=False)
 
