@@ -4,6 +4,8 @@ import time
 import os
 from pathlib import Path
 import collections
+import gc
+import torch
 
 # Get the parent directory of the current file
 SCRIPT_DIR = Path(__file__).parent.parent
@@ -26,6 +28,8 @@ def stop_process():
         st.session_state.display_lines.append("\nProcess terminated by user.")
         st.session_state.process_stop = True
         st.session_state.output_area.code("".join(st.session_state.display_lines), language="bash", height=700, wrap_lines=True) # display the output again
+        gc.collect()
+        torch.cuda.empty_cache()
         st.error("Operation cancelled.")
 
 def reset_process():
@@ -83,7 +87,8 @@ def write_terminal_output(process_type, name):
     process.wait()
     if process.poll() is not None:
         st.session_state.process = None
-
+    gc.collect()
+    torch.cuda.empty_cache()
     log_file.close()
 
 def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50", batchsize=32, total_epoch=60, 
