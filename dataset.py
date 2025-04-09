@@ -31,6 +31,13 @@ class ImageDataset(Dataset):
         pth = os.path.join(self.img_root, row["path"])
         image = Image.open(pth).convert("RGB")
         return image
+    
+    def get_filename(self, idx):
+        """Returns the image filename at a given index of the dataset."""
+        row = self.df.loc[idx]
+        pth = os.path.join(self.img_root, row["path"])
+        filename = os.path.splitext(os.path.basename(pth))[0]
+        return filename
 
     def __getitem__(self, idx):
         """Returns the transformed image and label at a given index."""

@@ -355,7 +355,7 @@ if task_type == "Model Training":
         train_csv_path = os.path.join(data_dir, "train.csv")
         val_csv_path = os.path.join(data_dir, "val.csv")
 
-        name = st.text_input("Output Model Name", value="resnet50", help="Define custom output model name")
+        name = st.text_input("Output Model Name", value="reid", help="Define custom output model name")
 
         batchsize = st.number_input("Batch Size", min_value=8, value=32, step=8)
         total_epoch = st.number_input("Total Epoch", min_value=1, value=20)
@@ -436,7 +436,7 @@ if task_type == "Model Testing":
         query_csv_path = os.path.join(data_dir, "query.csv")
         gallery_csv_path = os.path.join(data_dir, "gallery.csv")
         
-        model_dir = st.text_input("Model Directory Path:", value="model/resnet50", help="Path to the model root directory path")
+        model_dir = st.text_input("Model Directory Path:", value="model/reid", help="Path to the model root directory path")
         model_name = os.path.basename(model_dir)
         model_opts = os.path.join(model_dir, "opts.yaml")
         checkpoint = st.text_input("Model pth Filename", value="net_59.pth", help="Model pth file")
@@ -485,26 +485,25 @@ if task_type == "Visualization":
         query_csv_path = os.path.join(data_dir, "query.csv")
         gallery_csv_path = os.path.join(data_dir, "gallery.csv")
         
-        model_dir = st.text_input("Model Directory Path:", value="model/resnet50", help="Path to the model root directory path")
+        model_dir = st.text_input("Model Directory Path:", value="model/reid", help="Path to the model root directory path")
         model_opts = os.path.join(model_dir, "opts.yaml")
-        checkpoint = st.text_input("Model pth Filename", value="net_59.pth", help="Model pth file")
+        checkpoint = st.text_input("Model pth Filename", value="net_19.pth", help="Model pth file")
         checkpoint = os.path.join(model_dir, checkpoint)
+
+        use_saved_mat = st.checkbox("Use Cache", value=True if os.path.isfile("pytorch_result.mat") else False, help="Use precomputed features from a previous test run")
 
         advanced = st.toggle("Advanced Settings")
 
         if advanced:
             batchsize = st.number_input("Batch Size", min_value=8, value=64, step=8)
             input_size = st.number_input("Image Input Size", min_value=128, value=224, help="Image input size for the model")
-            num_images = st.number_input("Number of Gallery Images", min_value=2, value=29, help="Number of gallery images to show")
+            num_images = st.number_input("Number of Gallery Images", min_value=2, value=30, help="Number of gallery images to show")
             imgs_per_row = st.number_input("Images Per Row", min_value=2, value=6)
-
-            use_saved_mat = st.checkbox("Use Cache", value=True, help="Use precomputed features from a previous test.py run: pytorch_result.mat")
         else:
             batchsize = 64
             input_size = 224
-            num_images = 29
+            num_images = 30
             imgs_per_row = 6
-            use_saved_mat = False
         
     # error check
     if not os.path.isdir(data_dir):

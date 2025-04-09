@@ -98,15 +98,17 @@ def get_scores(query_feature, gallery_features):
     return score
 
 
-def show_query_result(query_img, gallery_imgs, query_label, gallery_labels, imgs_per_row, score_labels):
+def show_query_result(query_img, gallery_imgs, query_label, gallery_labels, imgs_per_row, score_labels, query_fname, gallery_fname):
     n_rows = math.ceil((1 + len(gallery_imgs)) / imgs_per_row)
-    fig, axes = plt.subplots(n_rows, imgs_per_row, figsize=(12, 15))
+    fig_width = imgs_per_row * 3
+    fig_height = n_rows * 3
+    fig, axes = plt.subplots(n_rows, imgs_per_row, figsize=(fig_width, fig_height))
 
     query_trans = transforms.Pad(4, 0)
     good_trans = transforms.Pad(4, (0, 255, 0))
     bad_trans = transforms.Pad(4, (255, 0, 0))
 
-    for idx, img in enumerate([query_img] + gallery_imgs):
+    for idx, (img, fname) in enumerate(zip([query_img] + gallery_imgs, [query_fname] + gallery_fname)):
         img = img.resize((128, 128))
         if idx == 0:
             img = query_trans(img)
@@ -117,6 +119,10 @@ def show_query_result(query_img, gallery_imgs, query_label, gallery_labels, imgs
 
         ax = axes.flat[idx]
         ax.imshow(img)
+        if idx == 0: # query image (no score)
+            ax.set_xlabel(fname)
+        else:
+            ax.set_xlabel(f"{fname} \n {round(score_labels[idx-1] * 100, 2):.2f}")
 
     for i in range(len(axes.flat)):
         ax = axes.flat[i]
@@ -124,7 +130,6 @@ def show_query_result(query_img, gallery_imgs, query_label, gallery_labels, imgs
         ax.set_xticks([], minor=True)
         ax.set_yticks([])
         ax.set_yticks([], minor=True)
-        ax.set_xlabel(str(f"{round(score_labels[i] * 100, 2):.2f}"))
         for spine in [ax.spines.left, ax.spines.right, ax.spines.top, ax.spines.bottom]:
             spine.set(visible=False)
 
@@ -201,9 +206,13 @@ def visualize(data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint
     else:
         g_labels = gallery_labels[idx]
 
+    num_images -= 1 # for list slicing
+    
     q_img = dataset.get_image(curr_idx)
     g_imgs = [image_datasets["gallery"].get_image(gallery_orig_idx[i])
               for i in idx[:num_images]]
-    fig = show_query_result(q_img, g_imgs, y, g_labels, imgs_per_row, score_labels)
+    query_fname = dataset.get_filename(curr_idx)
+    gallery_fname = [image_datasets["gallery"].get_filename(gallery_orig_idx[i]) for i in idx[:num_images]]
+    fig = show_query_result(q_img, g_imgs, y, g_labels, imgs_per_row, score_labels, query_fname, gallery_fname)
 
     return fig
