@@ -10,7 +10,6 @@ import torch
 from torch.autograd import Variable
 from torchvision import transforms
 import matplotlib.pyplot as plt
-import tqdm
 
 # fix "Examining the path of torch.classes raised: Tried to instantiate class '__path__._path', but it does not exist!"
 torch.classes.__path__ = [os.path.join(torch.__path__[0], torch.classes.__file__)] 
@@ -38,7 +37,11 @@ def extract_features(model, dataloader, device, batchsize):
     feature_dim = output.shape[1]
     labels = []
 
-    for idx, data in enumerate(tqdm.tqdm(dataloader)):
+    progress_text = st.empty()
+    progress_bar = st.progress(0)
+    total_iter = len(dataloader)
+
+    for idx, data in enumerate(dataloader):
         X, y = data
         n, c, h, w = X.size()
         img_count += n
@@ -63,6 +66,13 @@ def extract_features(model, dataloader, device, batchsize):
         start = idx * batchsize
         end = min((idx + 1) * batchsize, len(dataloader.dataset))
         features[start:end, :] = ff
+
+        progress_text.text(f"Computing gallery features {idx + 1}/{total_iter} ({((idx + 1)/total_iter)*100:.2f}%)")
+        progress_bar.progress((idx + 1) / total_iter)
+
+    progress_text.empty()
+    progress_bar.empty()
+        
     return features, labels
 
 
@@ -88,7 +98,7 @@ def get_scores(query_feature, gallery_features):
     return score
 
 
-def show_query_result(query_img, gallery_imgs, query_label, gallery_labels, imgs_per_row):
+def show_query_result(query_img, gallery_imgs, query_label, gallery_labels, imgs_per_row, score_labels):
     n_rows = math.ceil((1 + len(gallery_imgs)) / imgs_per_row)
     fig, axes = plt.subplots(n_rows, imgs_per_row, figsize=(12, 15))
 
@@ -114,7 +124,9 @@ def show_query_result(query_img, gallery_imgs, query_label, gallery_labels, imgs
         ax.set_xticks([], minor=True)
         ax.set_yticks([])
         ax.set_yticks([], minor=True)
-        ax.axis("off")
+        ax.set_xlabel(str(round((score_labels[i]*100), 2)))
+        for spine in [ax.spines.left, ax.spines.right, ax.spines.top, ax.spines.bottom]:
+            spine.set(visible=False)
 
     plt.tight_layout()
     return fig
@@ -133,7 +145,7 @@ def visualize(data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint
     query_df = pd.read_csv(query_csv_path)
     gallery_df = pd.read_csv(gallery_csv_path)
     classes = list(pd.concat([query_df["id"], gallery_df["id"]]).unique())
-    use_cam = "cam" in query_df and "cam" in gallery_df
+    use_cam = "camera" in query_df and "camera" in gallery_df
 
     image_datasets = {
         "query": ImageDataset(data_dir, query_df, "id", classes, transform=data_transforms),
@@ -158,8 +170,6 @@ def visualize(data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint
         model.eval()
         model.to(device)
 
-        print("Computing gallery features ...")
-
         with torch.no_grad():
             gallery_features, gallery_labels = extract_features(model, dataloaders["gallery"], device, batchsize)
             gallery_labels = np.array(gallery_labels)
@@ -175,8 +185,8 @@ def visualize(data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint
             q_feature = extract_feature(model, X, device).cpu()
 
     if use_cam:
-        curr_cam = query_df["cam"].iloc[curr_idx]
-        good_gallery_idx = torch.tensor(gallery_df["cam"] != curr_cam).type(torch.bool)
+        curr_cam = query_df["camera"].iloc[curr_idx]
+        good_gallery_idx = torch.tensor(gallery_df["camera"] != curr_cam).type(torch.bool)
         gallery_orig_idx = np.where(good_gallery_idx)[0]
         gal_features = gallery_features[good_gallery_idx]
     else:
@@ -184,6 +194,7 @@ def visualize(data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint
         gal_features = gallery_features
     gallery_scores = get_scores(q_feature, gal_features)
     idx = np.argsort(gallery_scores)[::-1]
+    score_labels = gallery_scores[idx]
 
     if use_cam:
         g_labels = gallery_labels[gallery_orig_idx][idx]
@@ -193,6 +204,6 @@ def visualize(data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint
     q_img = dataset.get_image(curr_idx)
     g_imgs = [image_datasets["gallery"].get_image(gallery_orig_idx[i])
               for i in idx[:num_images]]
-    fig = show_query_result(q_img, g_imgs, y, g_labels, imgs_per_row)
+    fig = show_query_result(q_img, g_imgs, y, g_labels, imgs_per_row, score_labels)
 
     return fig
