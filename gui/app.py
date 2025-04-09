@@ -333,14 +333,14 @@ if task_type == "Dataset Split":
                 datasplit.datasplit(crop_dir, dataset_dir, train_ratio, val_ratio, test_ratio, random_state)
                 st.success(f"Datasets successfully created at {dataset_dir}")
                 
-            if dataset_selection == "VeRi-776":
+            elif dataset_selection == "VeRi-776":
                 prepare_custom.txt_to_csv("VeRi", "image_train", train_txt_path, train_csv_path)
                 prepare_custom.train_val_split(dataset_dir, split_ratio, 42)
                 prepare_custom.txt_to_csv("VeRi", "image_test", gallery_txt_path, gallery_csv_path)
                 prepare_custom.txt_to_csv("VeRi", "image_query", query_txt_path, query_csv_path)
                 st.success(f"Datasets successfully created at {dataset_dir}")
             
-            if dataset_selection == "VRIC":
+            elif dataset_selection == "VRIC":
                 prepare_custom.txt_to_csv("VRIC", "train_images", train_txt_path, train_csv_path)
                 prepare_custom.train_val_split(dataset_dir, split_ratio, 42)
                 prepare_custom.txt_to_csv("VRIC", "gallery_images", gallery_txt_path, gallery_csv_path)
@@ -365,10 +365,10 @@ if task_type == "Model Training":
         if advanced:
             model = st.selectbox("Model", options=['resnet', 'resnet_ibn', 'densenet', 'swin', 'NAS', 
                                                         'hr', 'efficientnet'], index=1)
+            model_subtype="default"
             if model == "efficientnet":
                 subtype = st.slider("Model Subtype", min_value=0, max_value=7)
                 model_subtype = "b" + str(subtype)
-
             warm_epoch = st.number_input("Warm Epoch", min_value=0, value=0)
             save_freq = st.number_input("Save Frequency", min_value=1, value=5)
             num_workers = st.number_input("Number of Workers", min_value=1, value=2)
