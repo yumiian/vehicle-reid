@@ -147,17 +147,16 @@ if task_type == "Image Comparison":
     save_button = st.sidebar.button("Save results", type="primary", use_container_width=True, disabled=not os.path.isfile(db_path))
     if save_button:
         with st.spinner("Running..."):
-            if comparison.save():
-                if save_both:
-                    new_crop_dir1 = helper.create_subfolders(crops_dir, "crop")
-                    new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
-                    rename.rename_files(st.session_state.crop_dir1, new_crop_dir1, st.session_state.crop_dir2, new_crop_dir2)
-                    st.success(f'Results successfully saved to "{new_crop_dir1}" and "{new_crop_dir2}".')
-                else: 
-                    # save only the second results
-                    new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
-                    rename.rename_files(st.session_state.crop_dir2, new_crop_dir2)
-                    st.success(f'Results successfully saved to "{new_crop_dir2}".')
+            if save_both:
+                new_crop_dir1 = helper.create_subfolders(crops_dir, "crop")
+                new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
+                rename.rename_files(st.session_state.crop_dir1, new_crop_dir1, st.session_state.crop_dir2, new_crop_dir2)
+                st.success(f'Results successfully saved to "{new_crop_dir1}" and "{new_crop_dir2}".')
+            else: 
+                # save only the second results
+                new_crop_dir2 = helper.create_subfolders(crops_dir, "crop")
+                rename.rename_files(st.session_state.crop_dir2, new_crop_dir2)
+                st.success(f'Results successfully saved to "{new_crop_dir2}".')
     
     # Only show comparison interface if running
     if st.session_state.is_running:
