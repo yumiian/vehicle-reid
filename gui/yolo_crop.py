@@ -101,11 +101,23 @@ def crop_labels(image_path, label_path, output_path):
         database.insert_data("crop_image", label_id) 
 
 def cleanup(save_path):
-    main_folder = ["images", "labels", "crops", "crops.txt"]
+    main_folders = ["images", "labels", "crops", "crops.txt"]
+    all_folders = os.listdir(save_path)
+    total_folders = len(all_folders)
 
-    for folder in os.listdir(save_path):
-        if folder not in main_folder:
+    progress_text = st.empty()
+    progress_bar = st.progress(0)
+
+    for i, folder in enumerate(all_folders, start=1):
+        progress_text.text(f"Cleaning folder {i}/{total_folders}: {folder} ({i/total_folders*100:.2f}%)")
+
+        if folder not in main_folders:
             shutil.rmtree(os.path.join(save_path, folder)) # remove unwanted folders
+
+        progress_bar.progress(i / total_folders)
+
+    progress_text.empty()
+    progress_bar.empty()
 
 def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, classes=[2, 7], save_frames=False, save_txt=False, prefix="result"):
     model = YOLO(model)
