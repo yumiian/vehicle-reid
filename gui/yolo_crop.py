@@ -4,7 +4,6 @@ import os
 import shutil
 import streamlit as st
 import gc
-import time
 
 import database
 
@@ -135,11 +134,8 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
     # Streamlit
     progress_text = st.empty()
     progress_bar = st.progress(0)
-    stats_container = st.empty()
-    progress_text.text(f"Processing video with {total_frames} frames at {fps} FPS...")
 
-    start_time = time.time()
-    processing_times = []
+    progress_text.text(f"Processing video with {total_frames} frames at {fps} FPS...")
     
     while cap.isOpened():
         # Reset model state periodically to prevent memory buildup
@@ -149,9 +145,6 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
             # Reinitialize the tracker state
             if hasattr(model, "reset_tracker"):
                 model.reset_tracker()
-        
-        # Measure frame processing time
-        frame_start_time = time.time()
 
         # Read the next frame
         success, frame = cap.read()
@@ -175,49 +168,15 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
                 else:
                     cv2.imwrite(frame_path, frame)
         
-        # Calculate frame processing time
-        frame_time = time.time() - frame_start_time
-        processing_times.append(frame_time)
-        avg_time = sum(processing_times[-batchsize:]) / min(len(processing_times), batchsize)  # Moving average
-        
         # Update Streamlit progress
         if st and frame_count % 10 == 0:  
             progress_text.text(f"Processing frame {frame_count}/{total_frames} ({frame_count/total_frames*100:.2f}%)")
             progress_bar.progress(frame_count / total_frames)
-            
-            elapsed_time = time.time() - start_time
-            estimated_total = (elapsed_time / frame_count) * total_frames
-            remaining_time = estimated_total - elapsed_time
-            minutes, seconds = map(int, divmod(elapsed_time, 60))
-            rem_min, rem_s = map(int, divmod(remaining_time, 60))
-            
-            stats_container.write(f"""
-            Current Statistics:
-            | Metric | Value |
-            | --- | --- |
-            | Elapsed Time | {minutes:02d}:{seconds:02d} |
-            | Average Processing Time | {avg_time * 1000:.2f} ms/frame |
-            | Estimated Time Remaining | {rem_min:02d}:{rem_s:02d} |
-            | Current FPS | {frame_count / elapsed_time:.2f} |
-            """)
     
     cap.release()
 
     progress_text.empty()
     progress_bar.empty()
-    stats_container.empty()
-
-    total_time = time.time() - start_time
-    total_min, total_s = map(int, divmod(total_time, 60))
-
-    st.write("Overall Statistics:")
-    st.write(f"""
-            | Metric | Value |
-            | --- | --- |
-            | Total Frames Processed | {frame_count} |
-            | Total Time Taken | {total_min:02d}:{total_s:02d} |
-            | Average FPS | {frame_count / (total_time):.2f} |
-            """)
     
     # Clean up
     if save_frames or save_txt:
