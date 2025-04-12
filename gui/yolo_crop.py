@@ -4,6 +4,7 @@ import os
 import shutil
 import streamlit as st
 import gc
+import torch
 
 import database
 
@@ -128,50 +129,36 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
     if save_frames:
         os.makedirs(os.path.join(save_path, "images"), exist_ok=True)
     
-    # Process in batches to prevent memory leaks
     frame_count = 0
 
-    # Streamlit
     progress_text = st.empty()
     progress_bar = st.progress(0)
 
     progress_text.text(f"Processing video with {total_frames} frames at {fps} FPS...")
     
     while cap.isOpened():
-        # Reset model state periodically to prevent memory buildup
+        # prevent memory buildup
         if frame_count % batchsize == 0 and frame_count > 0:
-            gc.collect() # Force garbage collection to free memory
-            
-            # Reinitialize the tracker state
-            if hasattr(model, "reset_tracker"):
-                model.reset_tracker()
+            gc.collect()
+            torch.cuda.empty_cache()
 
-        # Read the next frame
         success, frame = cap.read()
         if not success:
             break
         
         frame_count += 1
         
-        results = model.track(source=frame, persist=True, conf=conf, line_width=line_width, classes=classes, project=save_path, 
-                              name=f"{prefix}-frame_{frame_count:06d}", save_txt=save_txt, verbose=False)
+        model.track(source=frame, persist=True, conf=conf, line_width=line_width, classes=classes, project=save_path, name=f"{prefix}-frame_{frame_count:06d}", save_txt=save_txt, verbose=False)
         
         if save_frames:
             frame_filename = f'{prefix}-frame_{frame_count:06d}.jpg'
             frame_path = os.path.join(save_path, "images", frame_filename)
-            # check if image file already exists
+
             if not os.path.exists(frame_path):
-                # Use the annotated frame from results if available
-                if hasattr(results, 'plot') and results[0].plot is not None:
-                    plotted_frame = results[0].plot()
-                    cv2.imwrite(frame_path, plotted_frame)
-                else:
-                    cv2.imwrite(frame_path, frame)
+                cv2.imwrite(frame_path, frame)
         
-        # Update Streamlit progress
-        if st and frame_count % 10 == 0:  
-            progress_text.text(f"Processing frame {frame_count}/{total_frames} ({frame_count/total_frames*100:.2f}%)")
-            progress_bar.progress(frame_count / total_frames)
+        progress_text.text(f"Processing frame {frame_count}/{total_frames} ({frame_count/total_frames*100:.2f}%)")
+        progress_bar.progress(frame_count / total_frames)
     
     cap.release()
 
@@ -182,6 +169,9 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
     if save_frames or save_txt:
         organize(save_path, prefix)
     cleanup(save_path)
+
+    gc.collect()
+    torch.cuda.empty_cache()
 
 def save_crop(save_path):
     label_path = os.path.join(save_path, "labels")
