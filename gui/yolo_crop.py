@@ -96,7 +96,6 @@ def crop_labels(image_path, label_path, output_path):
         output_filename = os.path.join(output_path, f"{filename_noext}-{label_id}.jpg")
         cv2.imwrite(output_filename, cropped)
 
-        # database
         database.create_table("crop_image")
         database.insert_data("crop_image", label_id) 
 
@@ -165,7 +164,7 @@ def track(model, video_path, save_path, batchsize=100, conf=0.7, line_width=2, c
     progress_text.empty()
     progress_bar.empty()
     
-    # Clean up
+    # clean up
     if save_frames or save_txt:
         organize(save_path, prefix)
     cleanup(save_path)
@@ -184,17 +183,13 @@ def save_crop(save_path):
     if not os.path.exists(image_path):
         raise FileNotFoundError("images folder not found")
 
-    # Get list of files first to determine total progress
     label_files = os.listdir(label_path)
     total_files = len(label_files)
     
-    # Create a progress bar
     progress_text = st.empty()
     progress_bar = st.progress(0)
     
-    # Process each file with progress updates
     for i, file in enumerate(label_files, start=1):
-        # Update status text
         progress_text.text(f"Creating crop image file {i}/{total_files}: {file} ({i/total_files*100:.2f}%)")
         
         label_file = os.path.join(label_path, file)
@@ -203,13 +198,11 @@ def save_crop(save_path):
         if not os.path.exists(image_file):
             continue
 
-        # database
         database.create_table("image")
         database.insert_data("image", os.path.splitext(file)[0].split("-")[-1].split("_")[-1]) # frame_000000 -> 000000
 
         crop_labels(image_file, label_file, crop_path)
         
-        # Update progress bar
         progress_bar.progress(i / total_files)
     
     progress_text.empty()
