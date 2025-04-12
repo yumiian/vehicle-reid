@@ -32,15 +32,15 @@ def edit_yolo_txt(input_path, output_path, verbose=False):
 
 def organize(save_path, prefix):
     sorted_files = sorted(os.listdir(save_path), key=extract_number)
+    total_files = len(sorted_files)
 
-    for file in sorted_files:
+    progress_text = st.empty()
+    progress_bar = st.progress(0)
+
+    for i, file in enumerate(sorted_files, start=1):
         # skip the folder name that is not frame
         if "frame" not in file:
             continue
-
-        id = file.split("_")[-1]
-        if id == "":
-            id = 1
 
         label_path = os.path.join(save_path, file, "labels")
         label_txt = os.path.join(label_path, "image0.txt")
@@ -49,11 +49,22 @@ def organize(save_path, prefix):
         # if there is no label, skip
         if not os.path.exists(label_txt):
             continue
+
+        progress_text.text(f"Organizing file {i}/{total_files}: {file} ({i/total_files*100:.2f}%)")
+
+        id = file.split("_")[-1]
+        if id == "":
+            id = 1
         
         edit_yolo_txt(label_txt, label_txt_new)
         os.makedirs(os.path.join(save_path, "labels"), exist_ok=True)
         frame_txt = os.path.join(save_path, "labels", f"{prefix}-frame_{int(id):06d}"+".txt")
         os.rename(label_txt_new, frame_txt)
+
+        progress_bar.progress(i / total_files)
+
+    progress_text.empty()
+    progress_bar.empty()
 
 def crop_labels(image_path, label_path, output_path):
     os.makedirs(output_path, exist_ok=True)
