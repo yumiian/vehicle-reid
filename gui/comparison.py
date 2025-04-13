@@ -83,19 +83,25 @@ def compare_images(crop1_path, crop2_path, image1_path, image2_path, label1_path
         st.image(full_img2, caption=f"Full image 2 ({st.session_state.img2} / {len(st.session_state.image_list2)})", width=500)
 
 def filter_files(files):
-    used_id = []
-    unique_files = []
-
+    id_to_files = {}
+    
     for filename in files:
         id = os.path.splitext(filename)[0].split("-")[-1]
+        if id not in id_to_files:
+            id_to_files[id] = []
+        id_to_files[id].append(filename)
+    
+    unique_files = []
+    
+    for id, file_list in id_to_files.items():
+        file_list.sort()
+        image_index = int(len(file_list) / 2)
 
-        if id in used_id:
-            continue
-
-        unique_files.append(filename)
-
-        used_id.append(id)
-
+        if image_index < len(file_list):
+            unique_files.append(file_list[image_index])
+        else:
+            unique_files.append(file_list[0])
+    
     return unique_files
 
 def save_results(save_path, results, mode="w"):
