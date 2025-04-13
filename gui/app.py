@@ -106,7 +106,7 @@ if task_type == "Data Preparation":
             database.create_table("video")
             database.insert_data("video")
 
-            new_output_dir = helper.create_subfolders(output_dir, "output")
+            new_output_dir = helper.create_subfolders(output_dir, f"{st.session_state.location}_{st.session_state.camera_id}_{st.session_state.time}_{confidence}")
             yolo_crop.track(model_path, video_path, new_output_dir, batchsize=batchsize, conf=confidence, save_frames=True, save_txt=True, prefix=prefix)
             yolo_crop.save_crop(new_output_dir)
 
