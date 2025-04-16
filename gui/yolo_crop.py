@@ -32,37 +32,51 @@ def edit_yolo_txt(input_path, output_path, verbose=False):
                 pass # if it is not int, skip (bug)
 
 def organize(save_path, prefix):
+    labels_dir = os.path.join(save_path, "labels")
+    os.makedirs(labels_dir, exist_ok=True)
+
     sorted_files = sorted(os.listdir(save_path), key=extract_number)
-    total_files = len(sorted_files)
-
-    progress_text = st.empty()
-    progress_bar = st.progress(0)
-
-    for i, file in enumerate(sorted_files, start=1):
-        # skip the folder name that is not frame
+    valid_files = []
+    for file in sorted_files:
         if "frame" not in file:
             continue
 
         label_path = os.path.join(save_path, file, "labels")
         label_txt = os.path.join(label_path, "image0.txt")
+
+        if os.path.exists(label_txt):
+            valid_files.append(file)
+
+    total_files = len(valid_files)
+
+    progress_text = st.empty()
+    progress_bar = st.progress(0)
+
+    def process_file(file):
+        label_path = os.path.join(save_path, file, "labels")
+        label_txt = os.path.join(label_path, "image0.txt")
         label_txt_new = os.path.join(label_path, "image.txt")
 
-        # if there is no label, skip
-        if not os.path.exists(label_txt):
-            continue
+        # Extract ID safely
+        id_part = file.split("_")[-1]
+        id = id_part if id_part.isdigit() else "1"
 
-        progress_text.text(f"Organizing file {i}/{total_files}: {file} ({i/total_files*100:.2f}%)")
-
-        id = file.split("_")[-1]
-        if id == "":
-            id = 1
-        
         edit_yolo_txt(label_txt, label_txt_new)
-        os.makedirs(os.path.join(save_path, "labels"), exist_ok=True)
-        frame_txt = os.path.join(save_path, "labels", f"{prefix}-frame_{int(id):06d}"+".txt")
+        frame_txt = os.path.join(labels_dir, f"{prefix}-frame_{int(id):06d}"+".txt")
         os.rename(label_txt_new, frame_txt)
-
-        progress_bar.progress(i / total_files)
+        
+        return True
+    
+    with ThreadPoolExecutor() as executor:
+        futures = {
+            executor.submit(process_file, file): file
+            for file in valid_files
+        }
+        
+        for i, future in enumerate(as_completed(futures), start=1):
+            filename = futures[future]
+            progress_text.text(f"Organizing file {i}/{total_files}: {filename} ({i/total_files*100:.2f}%)")
+            progress_bar.progress(i / total_files)
 
     progress_text.empty()
     progress_bar.empty()
