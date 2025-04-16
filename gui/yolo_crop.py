@@ -5,6 +5,7 @@ import shutil
 import streamlit as st
 import gc
 import torch
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import database
 
@@ -99,8 +100,7 @@ def crop_labels(image_path, label_path, output_path):
         output_filename = os.path.join(output_path, f"{filename_noext}-{label_id}.jpg")
         cv2.imwrite(output_filename, cropped)
 
-    database.create_table("crop_image")
-    database.insert_data("crop_image", label_id_list)
+    return label_id_list
 
 def cleanup(save_path):
     main_folders = ["images", "labels", "crops", "crops.txt"]
@@ -192,25 +192,32 @@ def save_crop(save_path):
     progress_text = st.empty()
     progress_bar = st.progress(0)
 
-    frame_id_list = []
-    
-    for i, file in enumerate(label_files, start=1):
-        progress_text.text(f"Creating crop image file {i}/{total_files}: {file} ({i/total_files*100:.2f}%)")
-        
+    database.create_table("image")
+    database.create_table("crop_image")
+
+    frame_label_list = []
+
+    def process_file(file):
         label_file = os.path.join(label_path, file)
         image_file = os.path.join(image_path, os.path.splitext(file)[0] + ".jpg")
-
-        if not os.path.exists(image_file):
-            continue
-
-        frame_id_list.append(os.path.splitext(file)[0].split("-")[-1].split("_")[-1]) # frame_000000 -> 000000
-
-        crop_labels(image_file, label_file, crop_path)
+        frame_id = os.path.splitext(file)[0].split("-")[-1].split("_")[-1]
+        label_ids = crop_labels(image_file, label_file, crop_path)
         
-        progress_bar.progress(i / total_files)
+        return frame_id, label_ids
+    
+    with ThreadPoolExecutor() as executor:
+        futures = []
+        for file in label_files:
+            futures.append(executor.submit(process_file, file))
+        
+        for i, future in enumerate(as_completed(futures), start=1):
+            frame_id, label_ids = future.result()
+            frame_label_list.append((frame_id, label_ids))
+            progress_text.text(f"Creating crop image file {i}/{total_files}: {file} ({i/total_files*100:.2f}%)")
+            progress_bar.progress(i / total_files)
 
-    database.create_table("image")
-    database.insert_data("image", frame_id_list)
+    database.insert_data("image", frame_label_list)
+    database.insert_data("crop_image", frame_label_list)
     
     progress_text.empty()
     progress_bar.empty()

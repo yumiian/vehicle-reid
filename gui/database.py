@@ -149,7 +149,10 @@ def insert_data(table, data1=None, data2=None):
         last_id = get_last_id(table, "image_id")
         query = f"INSERT INTO {table} (image_id, video_id, frame_id) VALUES (?, ?, ?)"
 
-        rows = [(last_id + i, st.session_state.video_id, d1) for i, d1 in enumerate(data1)]
+        rows = []
+        for i, (frame_id, _) in enumerate(data1):
+            image_id = last_id + i
+            rows.append((image_id, st.session_state.video_id, frame_id))
 
         cursor.executemany(query, rows)
         st.session_state.image_id = last_id
@@ -158,7 +161,11 @@ def insert_data(table, data1=None, data2=None):
         last_id = get_last_id(table, "crop_id")
         query = f"INSERT INTO {table} (crop_id, image_id, label_id) VALUES (?, ?, ?)"
 
-        rows = [(last_id + i, st.session_state.image_id, d1) for i, d1 in enumerate(data1)]
+        rows = []
+        for i, (_, label_ids) in enumerate(data1):
+            image_id = st.session_state.image_id + i
+            for label_id in label_ids:
+                rows.append((last_id + len(rows), image_id, label_id))
 
         cursor.executemany(query, rows)
         
