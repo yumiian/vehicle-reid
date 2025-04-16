@@ -117,20 +117,27 @@ def crop_labels(image_path, label_path, output_path):
     return label_id_list
 
 def cleanup(save_path):
-    main_folders = ["images", "labels", "crops", "crops.txt"]
-    all_folders = os.listdir(save_path)
-    total_folders = len(all_folders)
+    main_files = {"images", "labels", "crops", "crops.txt"}
+    all_files = os.listdir(save_path)
+    files_to_del = [file for file in all_files if file not in main_files]
+    total_files = len(files_to_del)
 
     progress_text = st.empty()
     progress_bar = st.progress(0)
 
-    for i, folder in enumerate(all_folders, start=1):
-        progress_text.text(f"Cleaning folder {i}/{total_folders}: {folder} ({i/total_folders*100:.2f}%)")
+    def delete_file(file):
+        shutil.rmtree(os.path.join(save_path, file)) # remove unwanted files and folders
 
-        if folder not in main_folders:
-            shutil.rmtree(os.path.join(save_path, folder)) # remove unwanted folders
-
-        progress_bar.progress(i / total_folders)
+    with ThreadPoolExecutor() as executor:
+        futures = {
+            executor.submit(delete_file, file): file
+            for file in files_to_del
+        }
+        
+        for i, future in enumerate(as_completed(futures), start=1):
+            filename = futures[future]
+            progress_text.text(f"Cleaning folder {i}/{total_files}: {filename} ({i/total_files*100:.2f}%)")
+            progress_bar.progress(i / total_files)
 
     progress_text.empty()
     progress_bar.empty()
