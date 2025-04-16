@@ -74,6 +74,8 @@ def crop_labels(image_path, label_path, output_path):
     with open(label_path, "r") as f:
         lines = f.readlines()
 
+    label_id_list = []
+
     for line in lines:
         values = line.split()
         id = values[0]
@@ -93,11 +95,12 @@ def crop_labels(image_path, label_path, output_path):
         filename_noext = os.path.splitext(os.path.basename(image_path))[0]
 
         label_id = f"{int(id):06d}"
+        label_id_list.append(label_id)
         output_filename = os.path.join(output_path, f"{filename_noext}-{label_id}.jpg")
         cv2.imwrite(output_filename, cropped)
 
-        database.create_table("crop_image")
-        database.insert_data("crop_image", label_id) 
+    database.create_table("crop_image")
+    database.insert_data("crop_image", label_id_list)
 
 def cleanup(save_path):
     main_folders = ["images", "labels", "crops", "crops.txt"]
@@ -188,6 +191,8 @@ def save_crop(save_path):
     
     progress_text = st.empty()
     progress_bar = st.progress(0)
+
+    frame_id_list = []
     
     for i, file in enumerate(label_files, start=1):
         progress_text.text(f"Creating crop image file {i}/{total_files}: {file} ({i/total_files*100:.2f}%)")
@@ -198,12 +203,14 @@ def save_crop(save_path):
         if not os.path.exists(image_file):
             continue
 
-        database.create_table("image")
-        database.insert_data("image", os.path.splitext(file)[0].split("-")[-1].split("_")[-1]) # frame_000000 -> 000000
+        frame_id_list.append(os.path.splitext(file)[0].split("-")[-1].split("_")[-1]) # frame_000000 -> 000000
 
         crop_labels(image_file, label_file, crop_path)
         
         progress_bar.progress(i / total_files)
+
+    database.create_table("image")
+    database.insert_data("image", frame_id_list)
     
     progress_text.empty()
     progress_bar.empty()

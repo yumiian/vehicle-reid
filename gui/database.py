@@ -149,14 +149,18 @@ def insert_data(table, data1=None, data2=None):
         last_id = get_last_id(table, "image_id")
         query = f"INSERT INTO {table} (image_id, video_id, frame_id) VALUES (?, ?, ?)"
 
-        cursor.execute(query, (last_id, st.session_state.video_id, data1))
+        rows = [(last_id + i, st.session_state.video_id, d1) for i, d1 in enumerate(data1)]
+
+        cursor.executemany(query, rows)
         st.session_state.image_id = last_id
 
     elif table == "crop_image":
         last_id = get_last_id(table, "crop_id")
         query = f"INSERT INTO {table} (crop_id, image_id, label_id) VALUES (?, ?, ?)"
 
-        cursor.execute(query, (last_id, st.session_state.image_id, data1))
+        rows = [(last_id + i, st.session_state.image_id, d1) for i, d1 in enumerate(data1)]
+
+        cursor.executemany(query, rows)
         
     elif table == "checkpoint_info":
         query = f"INSERT INTO {table} (id, crop_dir1, crop_dir2, index1, index2, total1, total2) VALUES (?, ?, ?, ?, ?, ?, ?)"
