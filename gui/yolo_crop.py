@@ -206,14 +206,16 @@ def save_crop(save_path):
         return frame_id, label_ids
     
     with ThreadPoolExecutor() as executor:
-        futures = []
-        for file in label_files:
-            futures.append(executor.submit(process_file, file))
+        futures = {
+            executor.submit(process_file, file): file
+            for file in label_files
+        }
         
         for i, future in enumerate(as_completed(futures), start=1):
+            filename = futures[future]
             frame_id, label_ids = future.result()
             frame_label_list.append((frame_id, label_ids))
-            progress_text.text(f"Creating crop image file {i}/{total_files}: {file} ({i/total_files*100:.2f}%)")
+            progress_text.text(f"Creating crop image file {i}/{total_files}: {filename} ({i/total_files*100:.2f}%)")
             progress_bar.progress(i / total_files)
 
     database.insert_data("image", frame_label_list)
