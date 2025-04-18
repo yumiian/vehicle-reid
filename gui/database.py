@@ -185,8 +185,8 @@ def undo_last_match(table):
     conn = init_db_connection()
     cursor = conn.cursor()
 
-    query = f"DELETE FROM {table} WHERE rowid = ?"
-    cursor.execute(query, (st.session_state.checkpoint_id,)) # tuple with comma
+    query = f"DELETE FROM {table} WHERE rowid = (SELECT MAX(ROWID) FROM {table})"
+    cursor.execute(query)
     
     conn.commit()
 
