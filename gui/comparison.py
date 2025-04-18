@@ -230,18 +230,22 @@ def start_comparison(keep_checkpoint=False, checkpoint=False):
 
 def next1():
     if len(st.session_state.image_list1) > 1:
+        time.sleep(0.1)
         st.session_state.img1 += 1
 
 def back1():
     if len(st.session_state.image_list1) > 1:
+        time.sleep(0.1)
         st.session_state.img1 -= 1
 
 def next2():
     if len(st.session_state.image_list2) > 1:
+        time.sleep(0.1)
         st.session_state.img2 += 1
 
 def back2():
     if len(st.session_state.image_list2) > 1:
+        time.sleep(0.1)
         st.session_state.img2 -= 1
 
 def del1():
@@ -253,8 +257,7 @@ def del1():
         ))
         
         # delete image
-        current_image = st.session_state.image_list1[st.session_state.img1]
-        st.session_state.image_list1.remove(current_image)
+        del st.session_state.image_list1[st.session_state.img1]
         st.session_state.img1 = min(st.session_state.img1, len(st.session_state.image_list1) - 1)
 
 def del2():
@@ -264,8 +267,7 @@ def del2():
             st.session_state.img2
         ))
 
-        current_image = st.session_state.image_list2[st.session_state.img2]
-        st.session_state.image_list2.remove(current_image)
+        del st.session_state.image_list2[st.session_state.img2]
         st.session_state.img2 = min(st.session_state.img2, len(st.session_state.image_list2) - 1) 
 
 def undo_del1():
