@@ -1,6 +1,7 @@
 import os
 import shutil
 import streamlit as st
+from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 
 import database
 
@@ -14,22 +15,39 @@ def batch_rename(input_dir, output_dir, old_id, new_id):
             os.path.splitext(filename)[0].split("-")[-1] == old_id 
     ]
 
-    for filename in valid_files:
+    def process_file(filename):
         old_filepath = os.path.join(input_dir, filename)
         new_filename = filename.replace(f"-{old_id}", f"-{new_id}")
         new_filepath = os.path.join(output_dir, new_filename)
         shutil.copy(old_filepath, new_filepath)
 
-def loop_batch_rename(dir, output_dir, old_id, new_id, total_files, start_index):
-    # progress bar
+    with ThreadPoolExecutor() as executor:
+        executor.map(process_file, valid_files)
+
+def process_all_renames(dir1, output_dir1, dir2, output_dir2, ids1, ids2):
+    total_files = len(ids1) + (len(ids2) if dir2 else 0) # both ids have same len
+
     progress_text = st.empty()
     progress_bar = st.progress(0)
+    
+    with ThreadPoolExecutor() as executor:
+        futures = []
 
-    for i, (id1, id2) in enumerate(zip(old_id, new_id), start=start_index): 
-        progress_text.write(f"Saving result {i}/{total_files} ({i/total_files*100:.2f}%)")
-        batch_rename(dir, output_dir, id1, id2)
-        progress_bar.progress(i / total_files)
-
+        for id1, id2 in zip(ids1, ids2):
+            if dir2 and output_dir2:
+                futures.append(executor.submit(batch_rename, dir1, output_dir1, id1, id1)) # rename first results
+                futures.append(executor.submit(batch_rename, dir2, output_dir2, id2, id1)) # rename second results
+            else:
+                if not st.session_state.show_one_only:
+                    futures.append(executor.submit(batch_rename, dir1, output_dir1, id2, id1)) # rename second results only
+                else:
+                    futures.append(executor.submit(batch_rename, dir1, output_dir1, id1, id1)) # rename first results only
+        
+        for i, future in enumerate(as_completed(futures), start=1):
+            progress = i / total_files
+            progress_text.write(f"Saving result {i}/{total_files} ({progress*100:.2f}%)")
+            progress_bar.progress(progress)
+    
     progress_text.empty()
     progress_bar.empty()
 
@@ -48,8 +66,4 @@ def rename_files(dir1, output_dir1, dir2=None, output_dir2=None):
     ids1 = [id[0] for id in image1]
     ids2 = [id[0] for id in image2]
 
-    if dir2 and output_dir2:
-        loop_batch_rename(dir=dir1, output_dir=output_dir1, old_id=ids1, new_id=ids1, total_files=len(ids1)+len(ids2), start_index=1) # rename first results
-        loop_batch_rename(dir=dir2, output_dir=output_dir2, old_id=ids2, new_id=ids1, total_files=len(ids1)+len(ids2), start_index=len(ids1)+1) # rename second results
-    else:
-        loop_batch_rename(dir=dir1, output_dir=output_dir1, old_id=ids2, new_id=ids1, total_files=len(ids2), start_index=1) # rename second results only
+    process_all_renames(dir1, output_dir1, dir2, output_dir2, ids1, ids2)
