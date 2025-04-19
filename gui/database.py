@@ -116,13 +116,16 @@ def insert_data(table, data1=None, data2=None):
         query = f"INSERT INTO {table} (id, image1, image2, filepath1, filepath2) VALUES (?, ?, ?, ?, ?)"
 
         image1 = os.path.splitext(st.session_state.image_list1[st.session_state.img1])[0].split("-")[-1]
-        image2 = os.path.splitext(st.session_state.image_list2[st.session_state.img2])[0].split("-")[-1]
         filepath1 = st.session_state.image_list1[st.session_state.img1]
-        filepath2 = st.session_state.image_list2[st.session_state.img2]
+
+        if not st.session_state.display_first_only:
+            image2 = os.path.splitext(st.session_state.image_list2[st.session_state.img2])[0].split("-")[-1]
+            filepath2 = st.session_state.image_list2[st.session_state.img2]
+        else:
+            image2 = ""
+            filepath2 = ""
 
         cursor.execute(query, (last_id, image1, image2, filepath1, filepath2))
-        
-        st.session_state.checkpoint_id = last_id
 
     elif table == "comparison":
         last_id = get_last_id(table, "id")

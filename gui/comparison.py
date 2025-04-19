@@ -1,6 +1,7 @@
 import os
 import cv2
 import streamlit as st
+import time
 
 import database
 
@@ -52,35 +53,59 @@ def compare_images(crop1_path, crop2_path, image1_path, image2_path, label1_path
     if not (crop1_path and crop2_path):  # Ensure both images exist
         raise FileNotFoundError("One of the images is missing")
     
-    img1_ = cv2.imread(crop1_path)
-    img2_ = cv2.imread(crop2_path)
-    img1 = cv2.cvtColor(img1_, cv2.COLOR_BGR2RGB)
-    img2 = cv2.cvtColor(img2_, cv2.COLOR_BGR2RGB)
-
-    full_img1_ = cv2.imread(image1_path)
-    full_img2_ = cv2.imread(image2_path)
-    full_img1 = cv2.cvtColor(full_img1_, cv2.COLOR_BGR2RGB)
-    full_img2 = cv2.cvtColor(full_img2_, cv2.COLOR_BGR2RGB)
-
-    id_list1, xywh_dict1 = read_txt(label1_path)
-    id_list2, xywh_dict2 = read_txt(label2_path)
-
-    draw_bbox(full_img1, crop1_path, id_list1, xywh_dict1)
-    draw_bbox(full_img2, crop2_path, id_list2, xywh_dict2)
+    crop1_id = os.path.splitext(os.path.basename(crop1_path))[0].split("-")[-1]
+    crop2_id = os.path.splitext(os.path.basename(crop2_path))[0].split("-")[-1]
+    image1_filename = os.path.splitext(os.path.basename(image1_path))[0]
+    image2_filename = os.path.splitext(os.path.basename(image2_path))[0]
     
-    col1, col2 = st.columns(2, vertical_alignment="center", border=False)
-    col3, col4 = st.columns(2, vertical_alignment="center", border=False)
-    with col1:
-        st.image(img1, caption="Crop image 1", width=100)
+    if not st.session_state.display_first_only:
+        img1_ = cv2.imread(crop1_path)
+        img2_ = cv2.imread(crop2_path)
+        img1 = cv2.cvtColor(img1_, cv2.COLOR_BGR2RGB)
+        img2 = cv2.cvtColor(img2_, cv2.COLOR_BGR2RGB)
 
-    with col2:
-        st.image(img2, caption="Crop image 2", width=100)
+        full_img1_ = cv2.imread(image1_path)
+        full_img2_ = cv2.imread(image2_path)
+        full_img1 = cv2.cvtColor(full_img1_, cv2.COLOR_BGR2RGB)
+        full_img2 = cv2.cvtColor(full_img2_, cv2.COLOR_BGR2RGB)
 
-    with col3:
-        st.image(full_img1, caption=f"Full image 1 ({st.session_state.img1} / {len(st.session_state.image_list1)})", width=500)
+        id_list1, xywh_dict1 = read_txt(label1_path)
+        id_list2, xywh_dict2 = read_txt(label2_path)
 
-    with col4:
-        st.image(full_img2, caption=f"Full image 2 ({st.session_state.img2} / {len(st.session_state.image_list2)})", width=500)
+        draw_bbox(full_img1, crop1_path, id_list1, xywh_dict1)
+        draw_bbox(full_img2, crop2_path, id_list2, xywh_dict2)
+        
+        col1, col2 = st.columns(2, vertical_alignment="center", border=False)
+        col3, col4 = st.columns(2, vertical_alignment="center", border=False)
+        with col1:
+            st.image(img1, caption=crop1_id, width=100)
+
+        with col2:
+            st.image(img2, caption=crop2_id, width=100)
+
+        with col3:
+            st.image(full_img1, caption=f"{image1_filename} ({st.session_state.img1} / {len(st.session_state.image_list1)})", width=500)
+
+        with col4:
+            st.image(full_img2, caption=f"{image2_filename} ({st.session_state.img2} / {len(st.session_state.image_list2)})", width=500)
+    else:
+        img1_ = cv2.imread(crop1_path)
+        img1 = cv2.cvtColor(img1_, cv2.COLOR_BGR2RGB)
+
+        full_img1_ = cv2.imread(image1_path)
+        full_img1 = cv2.cvtColor(full_img1_, cv2.COLOR_BGR2RGB)
+
+        id_list1, xywh_dict1 = read_txt(label1_path)
+
+        draw_bbox(full_img1, crop1_path, id_list1, xywh_dict1)
+
+        _, col1, _ = st.columns(3, vertical_alignment="center")
+        _, col2, _ = st.columns(3, vertical_alignment="center")
+        with col1:
+            st.image(img1, caption=crop1_id, width=100)
+
+        with col2:
+            st.image(full_img1, caption=f"{image1_filename} ({st.session_state.img1} / {len(st.session_state.image_list1)})", width=500)
 
 def filter_files(files):
     used_id = []

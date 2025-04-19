@@ -128,6 +128,7 @@ if task_type == "Image Comparison":
 
         save_both = st.checkbox("Save both results")
         show_del_undo = st.checkbox('Show "Delete" & "Undo"')
+        st.session_state.display_first_only = st.checkbox("Display first only", help="Display the first crop directory path images only to validate or remove duplicates etc.")
 
         if os.path.isfile(db_path):
             st.button("Save progress", use_container_width=True, on_click=comparison.save)
@@ -147,17 +148,24 @@ if task_type == "Image Comparison":
     save_button = st.sidebar.button("Save results", type="primary", use_container_width=True, disabled=not os.path.isfile(db_path))
     if save_button:
         with st.spinner("Running..."):
-            if save_both:
-                new_crop_dir1 = helper.create_subfolders(crops_dir, os.path.basename(os.path.dirname(st.session_state.crop_dir1)))
-                new_crop_dir2 = helper.create_subfolders(crops_dir, os.path.basename(os.path.dirname(st.session_state.crop_dir2)))
-                rename.rename_files(st.session_state.crop_dir1, new_crop_dir1, st.session_state.crop_dir2, new_crop_dir2)
-                st.success(f'Results successfully saved to "{new_crop_dir1}" and "{new_crop_dir2}".')
-            else: 
-                # save only the second results
-                new_crop_dir2 = helper.create_subfolders(crops_dir, os.path.basename(os.path.dirname(st.session_state.crop_dir2)))
-                rename.rename_files(st.session_state.crop_dir2, new_crop_dir2)
-                st.success(f'Results successfully saved to "{new_crop_dir2}".')
-    
+            save_done = comparison.save() # save progress
+            if save_done:
+                if not st.session_state.display_first_only:
+                    if save_both:
+                        new_crop_dir1 = helper.create_subfolders(crops_dir, os.path.basename(os.path.dirname(st.session_state.crop_dir1)))
+                        new_crop_dir2 = helper.create_subfolders(crops_dir, os.path.basename(os.path.dirname(st.session_state.crop_dir2)))
+                        rename.rename_files(st.session_state.crop_dir1, new_crop_dir1, st.session_state.crop_dir2, new_crop_dir2)
+                        st.success(f'Results successfully saved to "{new_crop_dir1}" and "{new_crop_dir2}".')
+                    else: 
+                        # save only the second results
+                        new_crop_dir2 = helper.create_subfolders(crops_dir, os.path.basename(os.path.dirname(st.session_state.crop_dir2)))
+                        rename.rename_files(st.session_state.crop_dir2, new_crop_dir2)
+                        st.success(f'Results successfully saved to "{new_crop_dir2}".')
+                else:
+                    new_crop_dir1 = helper.create_subfolders(crops_dir, f"_{os.path.basename(os.path.dirname(st.session_state.crop_dir1))}")
+                    rename.rename_files(st.session_state.crop_dir1, new_crop_dir1)
+                    st.success(f'Results successfully saved to "{new_crop_dir1}".')
+
     # Only show comparison interface if running
     if st.session_state.is_running:
         if len(st.session_state.image_list1) == 0 or len(st.session_state.image_list2) == 0:
@@ -181,13 +189,18 @@ if task_type == "Image Comparison":
             st.session_state.bdel2_disabled = len(st.session_state.image_list2) == 0
             st.session_state.bundo_del1_disabled = len(st.session_state.undo_stack1) == 0
             st.session_state.bundo_del2_disabled = len(st.session_state.undo_stack2) == 0
-                
-            # Navigation buttons
-            bcol1, bcol2, bcol3, bcol4 = st.columns(4, vertical_alignment="bottom")
-            bcol1.button("Previous", use_container_width=True, key="bback1", disabled=st.session_state.bback1_disabled, on_click=comparison.back1)
-            bcol2.button("Next", use_container_width=True, key="bnext1", disabled=st.session_state.bnext1_disabled, on_click=comparison.next1)
-            bcol3.button("Previous", use_container_width=True, key="bback2", disabled=st.session_state.bback2_disabled, on_click=comparison.back2)
-            bcol4.button("Next", use_container_width=True, key="bnext2", disabled=st.session_state.bnext2_disabled, on_click=comparison.next2)
+            
+            if not st.session_state.display_first_only:
+                # Navigation buttons
+                bcol1, bcol2, bcol3, bcol4 = st.columns(4, vertical_alignment="bottom")
+                bcol1.button("Previous", use_container_width=True, key="bback1", disabled=st.session_state.bback1_disabled, on_click=comparison.back1)
+                bcol2.button("Next", use_container_width=True, key="bnext1", disabled=st.session_state.bnext1_disabled, on_click=comparison.next1)
+                bcol3.button("Previous", use_container_width=True, key="bback2", disabled=st.session_state.bback2_disabled, on_click=comparison.back2)
+                bcol4.button("Next", use_container_width=True, key="bnext2", disabled=st.session_state.bnext2_disabled, on_click=comparison.next2)
+            else:
+                bcol1, bcol2 = st.columns(2, vertical_alignment="bottom")
+                bcol1.button("Previous", use_container_width=True, key="bback1", disabled=st.session_state.bback1_disabled, on_click=comparison.back1)
+                bcol2.button("Next", use_container_width=True, key="bnext1", disabled=st.session_state.bnext1_disabled, on_click=comparison.next1)
 
             # Action buttons
             st.button("Match found", type="primary", use_container_width=True, disabled=st.session_state.bmatch_disabled, on_click=comparison.match)

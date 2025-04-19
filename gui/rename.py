@@ -38,7 +38,7 @@ def process_all_renames(dir1, output_dir1, dir2, output_dir2, ids1, ids2):
                 futures.append(executor.submit(batch_rename, dir1, output_dir1, id1, id1)) # rename first results
                 futures.append(executor.submit(batch_rename, dir2, output_dir2, id2, id1)) # rename second results
             else:
-                if not st.session_state.show_one_only:
+                if not st.session_state.display_first_only:
                     futures.append(executor.submit(batch_rename, dir1, output_dir1, id2, id1)) # rename second results only
                 else:
                     futures.append(executor.submit(batch_rename, dir1, output_dir1, id1, id1)) # rename first results only
