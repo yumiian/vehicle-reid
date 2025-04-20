@@ -395,6 +395,9 @@ if task_type == "Model Training":
             instance = st.checkbox("Instance Loss", help="Use Instance Loss function")
             lifted = st.checkbox("Lifted Loss", help="Use Lifted Loss function")
         else:
+            checkpoint=None
+            start_epoch=None
+
             model="resnet_ibn"
             model_subtype="default"
             warm_epoch=0
