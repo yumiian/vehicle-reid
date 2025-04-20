@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import streamlit as st
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def get_all_images(images_dir):
     data = []
@@ -85,12 +86,23 @@ def copy_files(df, image_type, output_dir, progress_text, progress_bar, progress
 
     total_files = len(source_path)
 
-    for i, (src, dest) in enumerate(zip(source_path, output_filename), start=1):
+    def process_file(src, dest):
         filename = os.path.basename(src)
-        progress = progress_now + (0.2 * (i / total_files))
-        progress_text.text(f"Copying files for {image_type} set {i}/{total_files}: {filename} ({progress*100:.2f}%)")
         shutil.copy(src, dest)
-        progress_bar.progress(progress)
+
+        return filename
+
+    with ThreadPoolExecutor() as executor:
+        futures = {
+            executor.submit(process_file, src, dest): (src, dest)
+            for src, dest in zip(source_path, output_filename)
+        }
+
+        for i, future in enumerate(as_completed(futures), start=1):
+            filename = future.result()
+            progress = progress_now + (0.2 * (i / total_files))
+            progress_text.text(f"Copying files for {image_type} set {i}/{total_files}: {filename} ({progress*100:.2f}%)")
+            progress_bar.progress(progress)
     
     # create CSV files
     image_filepath = [os.path.join(image_type, os.path.basename(path)) for path in source_path] # "query/KJ-C1-0800-frame_000018-000002.jpg"
