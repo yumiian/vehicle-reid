@@ -123,7 +123,7 @@ parser.add_argument("--debug_period", type=int, default=100,
                     help="Print the loss and grad statistics for *this many* batches at a time.")
 opt = parser.parse_args()
 
-if opt.label_smoothing > 0.0 and version[0] < 1 or version[1] < 10:
+if opt.label_smoothing > 0.0 and (version[0] < 1 and version[1] < 10):
     warnings.warn(
         "Label smoothing is supported only from torch 1.10.0, the parameter will be ignored")
 
