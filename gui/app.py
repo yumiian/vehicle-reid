@@ -359,7 +359,13 @@ if task_type == "Model Training":
         advanced = st.toggle("Advanced Settings")
 
         if advanced:
-            model = st.selectbox("Model", options=['resnet', 'resnet_ibn', 'densenet', 'swin', 'NAS', 
+            resume_checkpoint = st.checkbox("Resume checkpoint")
+            if resume_checkpoint:
+                with st.container(border=True):
+                    checkpoint = st.text_input("Checkpoint File Path", value="net_19.pth", help="Model weight to be loaded and continued for training")
+                    start_epoch = st.number_input("Start Epoch", min_value=1, value=20, help="Epoch to continue training from, if the checkpoint was net_X.pth, this should be X+1")
+            
+            model = st.selectbox("Model Type", options=['resnet', 'resnet_ibn', 'densenet', 'swin', 'NAS', 
                                                         'hr', 'efficientnet'], index=1)
             model_subtype="default"
             if model == "efficientnet":
@@ -371,6 +377,7 @@ if task_type == "Model Training":
             lr = st.number_input("Learning Rate", min_value=0.01, value=0.05)
             samples_per_class = st.number_input("Samples per Class", min_value=1, value=1)
             erasing_p = st.slider("Random Erasing Probability", min_value=0.0, max_value=1.0, step=0.05, value=0.50)
+            label_smoothing = st.number_input("Label Smoothing", min_value=0.0, value=0.0)
             fp16 = st.checkbox("fp16", help="Use mixed precision training. This will occupy less memory in the forward pass, and will speed up training in some architectures (Nvidia A100, V100, etc.)")
             cosine = st.checkbox("Cosine", help="Use cosine learning rate")
             color_jitter = st.checkbox("Color jitter", help="Use color jitter in training")
@@ -378,9 +385,16 @@ if task_type == "Model Training":
             st.subheader("Loss Functions")
             triplet = st.checkbox("Triplet Loss", help="Use Triplet Loss function")
             contrast = st.checkbox("Contrastive Loss", help="Use Contrastive Loss function")
-            sphere = st.checkbox("Sphere Loss", help="Use Sphere Loss function")
             circle = st.checkbox("Circle Loss", help="Use Circle Loss function")
+            sphere = st.checkbox("Sphere Loss", help="Use Sphere Loss function")
+            arcface = st.checkbox("ArcFace Loss", help="Use ArcFace Loss function")
+            cosface = st.checkbox("CosFace Loss", help="Use CosFace Loss function")
+            instance = st.checkbox("Instance Loss", help="Use Instance Loss function")
+            lifted = st.checkbox("Lifted Loss", help="Use Lifted Loss function")
         else:
+            checkpoint=None
+            start_epoch=None
+
             model="resnet_ibn"
             model_subtype="default"
             warm_epoch=0
@@ -389,14 +403,19 @@ if task_type == "Model Training":
             lr=0.05
             samples_per_class=1
             erasing_p=0.5
+            label_smoothing=0.0
             fp16=False
             cosine=False
             color_jitter=False
 
             triplet=False
             contrast=False
-            sphere=False
             circle=False
+            sphere=False
+            arcface=False
+            cosface=False
+            instance=False
+            lifted=False
 
     paths = [data_dir, train_csv_path, val_csv_path]
     path_not_exists = any(not os.path.exists(path) for path in paths)
@@ -417,11 +436,11 @@ if task_type == "Model Training":
                 reid.initialize_session_state()
                 reid.train("train.py", data_dir=data_dir, train_csv_path=train_csv_path, 
                             val_csv_path=val_csv_path, name=name, batchsize=batchsize, 
-                            total_epoch=total_epoch, model=model, model_subtype=model_subtype,
+                            total_epoch=total_epoch, checkpoint=checkpoint, start_epoch=start_epoch, model=model, model_subtype=model_subtype,
                             warm_epoch=warm_epoch, save_freq=save_freq, num_workers=num_workers,
-                            lr=lr, samples_per_class=samples_per_class, erasing_p=erasing_p, fp16=fp16, cosine=cosine,
+                            lr=lr, samples_per_class=samples_per_class, erasing_p=erasing_p, label_smoothing=label_smoothing, fp16=fp16, cosine=cosine,
                             color_jitter=color_jitter, triplet=triplet, contrast=contrast,
-                            sphere=sphere, circle=circle)
+                            sphere=sphere, circle=circle, arcface=arcface, cosface=cosface, instance=instance, lifted=lifted)
         st.success("Done!")
 
 ########################

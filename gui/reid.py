@@ -91,10 +91,10 @@ def write_terminal_output(process_type, name):
     torch.cuda.empty_cache()
     log_file.close()
 
-def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50", batchsize=32, total_epoch=60, 
-          model="resnet_ibn", model_subtype="default", warm_epoch=0, save_freq=5, num_workers=2, lr=0.05, samples_per_class=1,
-          erasing_p=0.5, fp16=False, cosine=False, color_jitter=False, triplet=False, contrast=False,
-          sphere=False, circle=False):
+def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50", batchsize=32, total_epoch=60, checkpoint=None,
+          start_epoch=None, model="resnet_ibn", model_subtype="default", warm_epoch=0, save_freq=5, num_workers=2, lr=0.05, samples_per_class=1,
+          erasing_p=0.5, label_smoothing=0.0, fp16=False, cosine=False, color_jitter=False, triplet=False, contrast=False, sphere=False, circle=False, 
+          arcface=False, cosface=False, instance=False, lifted=False):
     command = [
         "python3", file_path,
         "--data_dir", data_dir,
@@ -111,7 +111,11 @@ def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50",
         "--lr", str(lr),
         "--samples_per_class", str(samples_per_class),
         "--erasing_p", str(erasing_p),
+        "--label_smoothing", str(label_smoothing)
     ]
+
+    if checkpoint is not None: command.append(f"--checkpoint {checkpoint}")
+    if start_epoch is not None: command.append(f"--start_epoch {start_epoch}")
 
     if fp16: command.append("--fp16")
     if cosine: command.append("--cosine")
@@ -120,6 +124,10 @@ def train(file_path, data_dir, train_csv_path, val_csv_path, name="ft_ResNet50",
     if contrast: command.append("--contrast")
     if sphere: command.append("--sphere")
     if circle: command.append("--circle")
+    if arcface: command.append("--arcface")
+    if cosface: command.append("--cosface")
+    if instance: command.append("--instance")
+    if lifted: command.append("--lifted")
 
     reset_process()
 
