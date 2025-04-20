@@ -364,6 +364,9 @@ if task_type == "Model Training":
                 with st.container(border=True):
                     checkpoint = st.text_input("Checkpoint File Path", value="net_19.pth", help="Model weight to be loaded and continued for training")
                     start_epoch = st.number_input("Start Epoch", min_value=1, value=20, help="Epoch to continue training from, if the checkpoint was net_X.pth, this should be X+1")
+            else:
+                checkpoint=None
+                start_epoch=None
             
             model = st.selectbox("Model Type", options=['resnet', 'resnet_ibn', 'densenet', 'swin', 'NAS', 
                                                         'hr', 'efficientnet'], index=1)
@@ -392,9 +395,6 @@ if task_type == "Model Training":
             instance = st.checkbox("Instance Loss", help="Use Instance Loss function")
             lifted = st.checkbox("Lifted Loss", help="Use Lifted Loss function")
         else:
-            checkpoint=None
-            start_epoch=None
-
             model="resnet_ibn"
             model_subtype="default"
             warm_epoch=0
