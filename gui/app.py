@@ -488,11 +488,11 @@ if task_type == "Model Testing":
             with st.container(border=True):
                 test_result_path = os.path.join(model_dir, "train.jpg")
                 st.image(test_result_path)
-            with st.container(border=True):
-                reid.initialize_session_state()
-                reid.test("test.py", data_dir=data_dir, query_csv_path=query_csv_path,
-                           gallery_csv_path=gallery_csv_path, model_opts=model_opts,
-                           checkpoint=checkpoint, name=model_name, batchsize=batchsize, eval_gpu=eval_gpu)
+                with st.container(border=True):
+                    reid.initialize_session_state()
+                    reid.test("test.py", data_dir=data_dir, query_csv_path=query_csv_path,
+                            gallery_csv_path=gallery_csv_path, model_opts=model_opts,
+                            checkpoint=checkpoint, name=model_name, batchsize=batchsize, eval_gpu=eval_gpu)
         st.success("Done!")
 
 ########################
