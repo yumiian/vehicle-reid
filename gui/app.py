@@ -463,6 +463,7 @@ if task_type == "Model Testing":
         batchsize = st.number_input("Batch Size", min_value=8, value=32, step=8)
 
         eval_gpu = st.checkbox("GPU", value=True, help="Run evaluation on GPU. This may need a high amount of GPU memory.")
+        show_plot = st.checkbox("Show plot", value=True)
 
     paths = [data_dir, query_csv_path, gallery_csv_path, model_dir, model_opts, checkpoint]
     path_not_exists = any(not os.path.exists(path) for path in paths)
@@ -485,14 +486,15 @@ if task_type == "Model Testing":
     
     if run_button:
         with st.spinner("Running..."):
-            with st.container(border=True):
-                test_result_path = os.path.join(model_dir, "train.jpg")
-                st.image(test_result_path)
+            if show_plot:
                 with st.container(border=True):
-                    reid.initialize_session_state()
-                    reid.test("test.py", data_dir=data_dir, query_csv_path=query_csv_path,
-                            gallery_csv_path=gallery_csv_path, model_opts=model_opts,
-                            checkpoint=checkpoint, name=model_name, batchsize=batchsize, eval_gpu=eval_gpu)
+                    test_result_path = os.path.join(model_dir, "train.jpg")
+                    st.image(test_result_path)
+            with st.container(border=True):
+                reid.initialize_session_state()
+                reid.test("test.py", data_dir=data_dir, query_csv_path=query_csv_path,
+                        gallery_csv_path=gallery_csv_path, model_opts=model_opts,
+                        checkpoint=checkpoint, name=model_name, batchsize=batchsize, eval_gpu=eval_gpu)
         st.success("Done!")
 
 ########################
