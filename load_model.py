@@ -27,7 +27,7 @@ def load_weights(model, ckpt_path):
     model: torch.nn.Module
         The model object with the loaded weights.
     """
-    state = torch.load(ckpt_path, map_location="cpu")
+    state = torch.load(ckpt_path, map_location="cpu", weights_only=True)
     if model.classifier.classifier[0].weight.shape != state["classifier.classifier.0.weight"].shape:
         state["classifier.classifier.0.weight"] = model.classifier.classifier[0].weight
         state["classifier.classifier.0.bias"] = model.classifier.classifier[0].bias
