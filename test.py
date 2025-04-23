@@ -137,7 +137,6 @@ result = {'gallery_f': gallery_feature.numpy(), 'gallery_label': gallery_labels,
           'gallery_cam': gallery_cam, 'query_cam': query_cam}
 scipy.io.savemat('pytorch_result.mat', result)
 
-print("Feature extraction finished, starting evaluation ...")
 torch.cuda.empty_cache()
 
 # run evaluation script
