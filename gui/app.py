@@ -468,6 +468,7 @@ if task_type == "Model Testing":
     paths = [data_dir, query_csv_path, gallery_csv_path, model_dir, model_opts, checkpoint]
     path_not_exists = any(not os.path.exists(path) for path in paths)
     run_button = st.sidebar.button("Run", type="primary", use_container_width=True, disabled=path_not_exists)
+    cancel_button = st.sidebar.button("Cancel", use_container_width=True, on_click=reid.stop_process)
 
     # error check
     if not os.path.isdir(data_dir):
