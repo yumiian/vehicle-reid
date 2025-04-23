@@ -518,10 +518,12 @@ def tpu_map_fn(index, flags):
 # Draw Curve
 # ---------------------------
 x_epoch = []
-fig = plt.figure()
-ax0 = fig.add_subplot(121, title="Loss")
-ax1 = fig.add_subplot(122, title="Top-1 Error")
+fig = plt.figure(figsize=(15, 9))
+ax0 = fig.add_subplot(121)
+ax1 = fig.add_subplot(122)
 
+ax0.set_title("Train & Val Loss", fontsize=14)
+ax1.set_title("Top-1 Error", fontsize=14)
 
 def draw_curve(current_epoch):
     x_epoch.append(current_epoch)
@@ -529,10 +531,17 @@ def draw_curve(current_epoch):
     ax0.plot(x_epoch, y_loss['val'], 'ro-', label='val')
     ax1.plot(x_epoch, y_err['train'], 'bo-', label='train')
     ax1.plot(x_epoch, y_err['val'], 'ro-', label='val')
+
+    ax0.set_xticks(range(0, max(x_epoch) + 1))  # Set integer ticks for ax0
+    ax1.set_xticks(range(0, max(x_epoch) + 1))  # Set integer ticks for ax1
+    ax0.set_xlabel("Epoch")
+    ax1.set_xlabel("Epoch")
+
     if current_epoch == 0:
         ax0.legend()
         ax1.legend()
-    fig.savefig(os.path.join(SCRIPT_DIR, "model", name, 'train.jpg'))
+
+    fig.savefig(os.path.join(SCRIPT_DIR, "model", name, 'train.jpg'), dpi=300)
 
 ######################################################################
 # Save model
