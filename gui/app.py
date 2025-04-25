@@ -487,8 +487,8 @@ if task_type == "Model Testing":
     
     if run_button:
         with st.spinner("Running..."):
-            if show_plot:
-                with st.container(border=True):
+            with st.container(border=True):
+                if show_plot:
                     test_result_path = os.path.join(model_dir, "train.jpg")
                     st.image(test_result_path)
             with st.container(border=True):
