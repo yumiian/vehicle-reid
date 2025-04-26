@@ -452,7 +452,7 @@ if task_type == "Model Testing":
         model_dir = st.text_input("Model Directory Path:", value="model/reid", help="Path to the model root directory path")
         model_name = os.path.basename(model_dir)
         model_opts = os.path.join(model_dir, "opts.yaml")
-        checkpoint = st.text_input("Model pth Filename", value="net_59.pth", help="Model pth file")
+        checkpoint = st.text_input("Model pth Filename", value="net_19.pth", help="Model pth file")
         checkpoint = os.path.join(model_dir, checkpoint)
 
         batchsize = st.number_input("Batch Size", min_value=8, value=32, step=8)
