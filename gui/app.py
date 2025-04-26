@@ -53,7 +53,7 @@ if task_type == "Data Preparation":
     with st.sidebar.container(border=True):
         uploaded_video = st.file_uploader("Select video file", type=['mp4'])
 
-        confidence = float(st.slider("Model Confidence Level", 25, 100, 80)) / 100
+        confidence = float(st.slider("Model Confidence Level", 25, 100, 70)) / 100
         batchsize = st.number_input("Batch Size", min_value=10, value=100, step=10, help="Batch size in number of frames")
 
         if "location" not in st.session_state:
