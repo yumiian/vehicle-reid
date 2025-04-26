@@ -18,19 +18,19 @@ import database
 import augment
 
 # initialize path and directories
-model_path = Path(settings.YOLO_MODEL_FILEPATH)
+MODEL_PATH = Path(settings.YOLO_MODEL_FILEPATH)
 
-video_dir = Path(settings.VIDEO_DIR)
-video_path = Path(settings.VIDEO_FILEPATH)
+VIDEO_DIR = Path(settings.VIDEO_DIR)
+VIDEO_PATH = Path(settings.VIDEO_FILEPATH)
 
-output_dir = Path(settings.OUTPUT_DIR)
-crops_dir = Path(settings.CROPS_DIR)
-datasets_dir = Path(settings.DATASETS_DIR)
+OUTPUT_DIR = Path(settings.OUTPUT_DIR)
+CROPS_DIR = Path(settings.CROPS_DIR)
+DATASETS_DIR = Path(settings.DATASETS_DIR)
 
-db_path = Path(settings.DATABASE_FILEPATH)
+DB_PATH = Path(settings.DATABASE_FILEPATH)
 
 # remove the video files after task completed to save storage
-helper.cleanup(video_dir)
+helper.cleanup(VIDEO_DIR)
 
 st.set_page_config(
     page_title="Vehicle Re-ID",
@@ -95,7 +95,7 @@ if task_type == "Data Preparation":
                 st.video(uploaded_video)
 
         video_byte = uploaded_video.getvalue()
-        helper.save_file(video_byte, video_dir)
+        helper.save_file(video_byte, VIDEO_DIR)
 
         run_button = st.sidebar.button("Run", type="primary", use_container_width=True)
     else:
@@ -106,8 +106,8 @@ if task_type == "Data Preparation":
             database.create_table("video")
             database.insert_data("video")
 
-            new_output_dir = helper.create_subfolders(output_dir, f"{st.session_state.location}_{st.session_state.camera_id}_{st.session_state.time}_{confidence}")
-            yolo_crop.track(model_path, video_path, new_output_dir, batchsize=batchsize, conf=confidence, save_frames=True, save_txt=True, prefix=prefix)
+            new_output_dir = helper.create_subfolders(OUTPUT_DIR, f"{st.session_state.location}_{st.session_state.camera_id}_{st.session_state.time}_{confidence}")
+            yolo_crop.track(MODEL_PATH, VIDEO_PATH, new_output_dir, batchsize=batchsize, conf=confidence, save_frames=True, save_txt=True, prefix=prefix)
             yolo_crop.save_crop(new_output_dir)
 
         st.success(f'Done! Output files saved to "{new_output_dir}"')
@@ -118,13 +118,13 @@ if task_type == "Image Comparison":
     comparison.initialize_session_state()
 
     with st.sidebar.container(border=True):
-        st.session_state.crop_dir1 = st.text_input("First Crop Directory Path", value=os.path.join(output_dir, "output/crops"), key="crop_dir1_input")
-        st.session_state.crop_dir2 = st.text_input("Second Crop Directory Path", value=os.path.join(output_dir, "output2/crops"), key="crop_dir2_input")
+        st.session_state.crop_dir1 = st.text_input("First Crop Directory Path", value=os.path.join(OUTPUT_DIR, "output/crops"), key="crop_dir1_input")
+        st.session_state.crop_dir2 = st.text_input("Second Crop Directory Path", value=os.path.join(OUTPUT_DIR, "output2/crops"), key="crop_dir2_input")
 
         save_both = st.checkbox("Save both results")
         st.session_state.display_first_only = st.checkbox("Display first only", help="Display the first crop directory path images only to validate or remove duplicates etc.")
 
-        if os.path.isfile(db_path):
+        if os.path.isfile(DB_PATH):
             st.button("Save progress", use_container_width=True, on_click=comparison.save)
             st.button("Resume checkpoint", use_container_width=True, on_click=comparison.resume)
             st.button("Delete checkpoint", type="primary", use_container_width=True, on_click=comparison.reset)
@@ -139,24 +139,24 @@ if task_type == "Image Comparison":
     if not os.path.isdir(st.session_state.crop_dir2):
         st.error("Second crop directory path is not found!")
 
-    save_button = st.sidebar.button("Save results", type="primary", use_container_width=True, disabled=not os.path.isfile(db_path))
+    save_button = st.sidebar.button("Save results", type="primary", use_container_width=True, disabled=not os.path.isfile(DB_PATH))
     if save_button:
         with st.spinner("Running..."):
             save_done = comparison.save() # save progress
             if save_done:
                 if not st.session_state.display_first_only:
                     if save_both:
-                        new_crop_dir1 = helper.create_subfolders(crops_dir, os.path.basename(os.path.dirname(st.session_state.crop_dir1)))
-                        new_crop_dir2 = helper.create_subfolders(crops_dir, os.path.basename(os.path.dirname(st.session_state.crop_dir2)))
+                        new_crop_dir1 = helper.create_subfolders(CROPS_DIR, os.path.basename(os.path.dirname(st.session_state.crop_dir1)))
+                        new_crop_dir2 = helper.create_subfolders(CROPS_DIR, os.path.basename(os.path.dirname(st.session_state.crop_dir2)))
                         rename.rename_files(st.session_state.crop_dir1, new_crop_dir1, st.session_state.crop_dir2, new_crop_dir2)
                         st.success(f'Results successfully saved to "{new_crop_dir1}" and "{new_crop_dir2}".')
                     else: 
                         # save only the second results
-                        new_crop_dir2 = helper.create_subfolders(crops_dir, os.path.basename(os.path.dirname(st.session_state.crop_dir2)))
+                        new_crop_dir2 = helper.create_subfolders(CROPS_DIR, os.path.basename(os.path.dirname(st.session_state.crop_dir2)))
                         rename.rename_files(st.session_state.crop_dir2, new_crop_dir2)
                         st.success(f'Results successfully saved to "{new_crop_dir2}".')
                 else:
-                    new_crop_dir1 = helper.create_subfolders(crops_dir, f"_{os.path.basename(os.path.dirname(st.session_state.crop_dir1))}")
+                    new_crop_dir1 = helper.create_subfolders(CROPS_DIR, f"_{os.path.basename(os.path.dirname(st.session_state.crop_dir1))}")
                     rename.rename_files(st.session_state.crop_dir1, new_crop_dir1)
                     st.success(f'Results successfully saved to "{new_crop_dir1}".')
 
@@ -206,8 +206,8 @@ if task_type == "Data Augmentation":
     with st.sidebar.container(border=True):
         transform_list = []
 
-        image_path = st.text_input("Images Directory Path", value=os.path.join(crops_dir, "crop"), key="augment_images_path")
-        output_path = st.text_input("Output Directory Path", value=os.path.join(crops_dir, "_crop"), key="augment_output_path")
+        image_path = st.text_input("Images Directory Path", value=os.path.join(CROPS_DIR, "crop"), key="augment_images_path")
+        output_path = st.text_input("Output Directory Path", value=os.path.join(CROPS_DIR, "_crop"), key="augment_output_path")
 
         st.write("Apply augmentation techniques:")
         horflip = st.checkbox("HorizontalFlip", help="Flip the input horizontally around the y-axis.")
@@ -269,7 +269,7 @@ if task_type == "Data Augmentation":
 
 if task_type == "Dataset Split":
     with st.sidebar.container(border=True):
-        crop_dir = st.text_input("Crop Directory Path", value=crops_dir, key="crop_dir_input")
+        crop_dir = st.text_input("Crop Directory Path", value=CROPS_DIR, key="crop_dir_input")
         dataset_name = st.text_input("Dataset Name", value="reid", key="dataset_name_input")
         train_ratio = st.slider("Training Set Ratio", min_value=0.05, max_value=1.0, value=0.6, step=0.05)
         val_ratio = st.slider("Validation Set Ratio", min_value=0.05, max_value=1.0, value=0.2, step=0.05)
@@ -280,7 +280,7 @@ if task_type == "Dataset Split":
         if custom_dataset:
             dataset_selection = st.radio("Custom Dataset", options=["VeRi-776", "VRIC"], label_visibility="collapsed")
             if dataset_selection == "VeRi-776":
-                dataset_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "VeRi"))
+                dataset_dir = st.text_input("Dataset Directory Path", value=os.path.join(DATASETS_DIR, "VeRi"))
                 split_ratio = st.slider("Split Ratio", help="Train & Validation Split Ratio", min_value=0.0, max_value=1.0, value=0.75, step=0.05)
                 train_txt_path = os.path.join(dataset_dir, "name_train.txt")
                 train_csv_path = os.path.join(dataset_dir, "train.csv")
@@ -292,7 +292,7 @@ if task_type == "Dataset Split":
                 query_csv_path = os.path.join(dataset_dir, "query.csv")
 
             if dataset_selection == "VRIC":
-                dataset_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "VRIC"))
+                dataset_dir = st.text_input("Dataset Directory Path", value=os.path.join(DATASETS_DIR, "VRIC"))
                 split_ratio = st.slider("Split Ratio", help="Train & Validation Split Ratio", min_value=0.0, max_value=1.0, value=0.75, step=0.05)
                 train_txt_path = os.path.join(dataset_dir, "vric_train.txt")
                 train_csv_path = os.path.join(dataset_dir, "train.csv")
@@ -320,7 +320,7 @@ if task_type == "Dataset Split":
     if run_button:
         with st.spinner("Running..."):
             if not custom_dataset:
-                dataset_dir = helper.create_subfolders(datasets_dir, dataset_name)
+                dataset_dir = helper.create_subfolders(DATASETS_DIR, dataset_name)
                 datasplit.datasplit(crop_dir, dataset_dir, train_ratio, val_ratio, test_ratio, random_state)
                 st.success(f"Datasets successfully created at {dataset_dir}")
                 
@@ -342,7 +342,7 @@ if task_type == "Dataset Split":
 
 if task_type == "Model Training":
     with st.sidebar.container(border=True):
-        data_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "reid"), help="Path to the dataset root directory path")
+        data_dir = st.text_input("Dataset Directory Path", value=os.path.join(DATASETS_DIR, "reid"), help="Path to the dataset root directory path")
         train_csv_path = os.path.join(data_dir, "train.csv")
         val_csv_path = os.path.join(data_dir, "val.csv")
 
@@ -445,7 +445,7 @@ if task_type == "Model Training":
 
 if task_type == "Model Testing":
     with st.sidebar.container(border=True):
-        data_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "reid"), help="Path to the dataset root directory path")
+        data_dir = st.text_input("Dataset Directory Path", value=os.path.join(DATASETS_DIR, "reid"), help="Path to the dataset root directory path")
         query_csv_path = os.path.join(data_dir, "query.csv")
         gallery_csv_path = os.path.join(data_dir, "gallery.csv")
         
@@ -497,7 +497,7 @@ if task_type == "Model Testing":
 
 if task_type == "Visualization":
     with st.sidebar.container(border=True):
-        data_dir = st.text_input("Dataset Directory Path", value=os.path.join(datasets_dir, "reid"), help="Path to the dataset root directory path")
+        data_dir = st.text_input("Dataset Directory Path", value=os.path.join(DATASETS_DIR, "reid"), help="Path to the dataset root directory path")
         query_csv_path = os.path.join(data_dir, "query.csv")
         gallery_csv_path = os.path.join(data_dir, "gallery.csv")
         
