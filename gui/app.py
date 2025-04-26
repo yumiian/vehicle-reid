@@ -111,11 +111,6 @@ if task_type == "Data Preparation":
             yolo_crop.save_crop(new_output_dir)
 
         st.success(f'Done! Output files saved to "{new_output_dir}"')
-        
-    cancel_button = st.sidebar.button("Cancel", use_container_width=True)
-    if cancel_button:
-        st.toast("Operation cancelled.")
-        st.stop()
 
 ########################
 
