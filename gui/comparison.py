@@ -171,8 +171,6 @@ def initialize_session_state():
     """Initialize all session state variables if they don't exist"""
     if "is_running" not in st.session_state:
         st.session_state.is_running = False
-    if "is_reviewing" not in st.session_state:
-        st.session_state.is_reviewing = False
     
     if "img1" not in st.session_state:
         st.session_state.img1 = 0
@@ -196,14 +194,6 @@ def initialize_session_state():
         st.session_state.bnext2_disabled = False
     if "bmatch_disabled" not in st.session_state:
         st.session_state.bmatch_disabled = True
-    if "bdel1_disabled" not in st.session_state:
-        st.session_state.bdel1_disabled = False
-    if "bdel2_disabled" not in st.session_state:
-        st.session_state.bdel2_disabled = False
-    if "bundo_del1_disabled" not in st.session_state:
-        st.session_state.bundo_del1_disabled = False
-    if "bundo_del2_disabled" not in st.session_state:
-        st.session_state.bundo_del2_disabled = False
 
 def resume_checkpoint():
     if not database.check_table_exist("checkpoint_info"):
