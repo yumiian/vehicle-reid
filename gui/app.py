@@ -285,11 +285,10 @@ if task_type == "Dataset Split":
                 train_txt_path = os.path.join(dataset_dir, "name_train.txt")
                 train_csv_path = os.path.join(dataset_dir, "train.csv")
 
-                gallery_txt_path = os.path.join(dataset_dir, "name_test.txt")
-                new_gallery_txt_path = os.path.join(dataset_dir, "name_test_.txt")
-                gallery_csv_path = os.path.join(dataset_dir, "gallery.csv")
+                test_txt_path = os.path.join(dataset_dir, "name_test.txt")
+                test_csv_path = os.path.join(dataset_dir, "test.csv")
 
-                query_txt_path = os.path.join(dataset_dir, "name_query.txt")
+                gallery_csv_path = os.path.join(dataset_dir, "gallery.csv")
                 query_csv_path = os.path.join(dataset_dir, "query.csv")
 
             if dataset_selection == "VRIC":
@@ -327,15 +326,14 @@ if task_type == "Dataset Split":
                 
             elif dataset_selection == "VeRi-776":
                 prepare_custom.txt_to_csv("VeRi", "image_train", train_txt_path, train_csv_path)
-                prepare_custom.train_val_split(dataset_dir, split_ratio, 42)
-                prepare_custom.veri_gallery(query_txt_path, gallery_txt_path, new_gallery_txt_path)
-                prepare_custom.txt_to_csv("VeRi", "image_test", new_gallery_txt_path, gallery_csv_path)
-                prepare_custom.txt_to_csv("VeRi", "image_query", query_txt_path, query_csv_path)
+                prepare_custom.train_val_split(dataset_dir, split_ratio, random_state)
+                prepare_custom.txt_to_csv("VeRi", "image_test", test_txt_path, test_csv_path)
+                prepare_custom.gallery_query_split(dataset_dir, random_state)
                 st.success(f"Datasets successfully created at {dataset_dir}")
             
             elif dataset_selection == "VRIC":
                 prepare_custom.txt_to_csv("VRIC", "train_images", train_txt_path, train_csv_path)
-                prepare_custom.train_val_split(dataset_dir, split_ratio, 42)
+                prepare_custom.train_val_split(dataset_dir, split_ratio, random_state)
                 prepare_custom.txt_to_csv("VRIC", "gallery_images", gallery_txt_path, gallery_csv_path)
                 prepare_custom.txt_to_csv("VRIC", "probe_images", query_txt_path, query_csv_path)
                 st.success(f"Datasets successfully created at {dataset_dir}")
