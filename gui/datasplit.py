@@ -40,9 +40,6 @@ def subset_split(df, train_ratio, val_ratio, test_ratio, random_state):
     # all unique IDs
     all_ids = df["id"].unique()
     train_val_ids, test_ids = train_test_split(all_ids, test_size=test_ratio, random_state=random_state)
-
-    # Split test_ids into query and distractor sets
-    query_ids, distractor_ids = train_test_split(test_ids, test_size=0.5, random_state=random_state)
     
     # build train & val by sampling per ID
     train_rows = []
@@ -62,9 +59,8 @@ def subset_split(df, train_ratio, val_ratio, test_ratio, random_state):
     # build gallery & query from test IDs
     gallery_rows = []
     query_rows = []
-    distractor_rows = []
     
-    for ids in query_ids:
+    for ids in test_ids:
         group = df[df["id"] == ids]
         cams = group["camera"].unique()
         if len(cams) < 2:
@@ -81,14 +77,8 @@ def subset_split(df, train_ratio, val_ratio, test_ratio, random_state):
         
         query_rows.append(query)
         gallery_rows.append(gallery)
-
-    # Add distractor images (1 image per distractor ID)
-    for ids in distractor_ids:
-        group = df[df["id"] == ids]
-        distractor = group.sample(n=1, random_state=random_state)  # 1 image per distractor ID
-        distractor_rows.append(distractor)
     
-    gallery_df = pd.concat(gallery_rows + distractor_rows, ignore_index=True)
+    gallery_df = pd.concat(gallery_rows, ignore_index=True)
     query_df = pd.concat(query_rows, ignore_index=True)
     
     return train_df, val_df, gallery_df, query_df
