@@ -286,6 +286,7 @@ if task_type == "Dataset Split":
                 train_csv_path = os.path.join(dataset_dir, "train.csv")
 
                 gallery_txt_path = os.path.join(dataset_dir, "name_test.txt")
+                new_gallery_txt_path = os.path.join(dataset_dir, "name_test_.txt")
                 gallery_csv_path = os.path.join(dataset_dir, "gallery.csv")
 
                 query_txt_path = os.path.join(dataset_dir, "name_query.txt")
@@ -327,7 +328,8 @@ if task_type == "Dataset Split":
             elif dataset_selection == "VeRi-776":
                 prepare_custom.txt_to_csv("VeRi", "image_train", train_txt_path, train_csv_path)
                 prepare_custom.train_val_split(dataset_dir, split_ratio, 42)
-                prepare_custom.txt_to_csv("VeRi", "image_test", gallery_txt_path, gallery_csv_path)
+                prepare_custom.veri_gallery(query_txt_path, gallery_txt_path, new_gallery_txt_path)
+                prepare_custom.txt_to_csv("VeRi", "image_test", new_gallery_txt_path, gallery_csv_path)
                 prepare_custom.txt_to_csv("VeRi", "image_query", query_txt_path, query_csv_path)
                 st.success(f"Datasets successfully created at {dataset_dir}")
             

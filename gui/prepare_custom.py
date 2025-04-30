@@ -2,6 +2,7 @@ import csv
 import os
 import random
 import pandas as pd
+import subprocess
 
 def txt_to_csv(dataset_name, dataset_type, txt_path, csv_path):
     if dataset_name == "VeRi":
@@ -48,3 +49,8 @@ def train_val_split(dataset_dir, split_ratio, seed):
 
     train_df.to_csv(train_path, index=False)
     val_df.to_csv(val_path, index=False)
+
+def veri_gallery(query_path, gallery_path, output_path):
+    cmd = f"grep -v -F -f {query_path} {gallery_path} > {output_path}"
+    
+    subprocess.run(cmd, shell=True)
