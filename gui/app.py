@@ -276,9 +276,9 @@ if task_type == "Dataset Split":
         test_ratio = st.slider("Test Set Ratio", min_value=0.05, max_value=1.0, value=0.2, step=0.05)
         random_state = st.number_input(label="Set Random State", value=42)
 
-        custom_dataset = st.checkbox("Custom Dataset")
-        if custom_dataset:
-            dataset_selection = st.radio("Custom Dataset", options=["VeRi-776", "VRIC"], label_visibility="collapsed")
+        public_dataset = st.checkbox("Public Dataset")
+        if public_dataset:
+            dataset_selection = st.radio("Public Dataset", options=["VeRi-776", "VRIC"], label_visibility="collapsed")
             if dataset_selection == "VeRi-776":
                 dataset_dir = st.text_input("Dataset Directory Path", value=os.path.join(DATASETS_DIR, "VeRi"))
                 split_ratio = st.slider("Split Ratio", help="Train & Validation Split Ratio", min_value=0.0, max_value=1.0, value=0.75, step=0.05)
@@ -319,7 +319,7 @@ if task_type == "Dataset Split":
 
     if run_button:
         with st.spinner("Running..."):
-            if not custom_dataset:
+            if not public_dataset:
                 dataset_dir = helper.create_subfolders(DATASETS_DIR, dataset_name)
                 datasplit.datasplit(crop_dir, dataset_dir, train_ratio, val_ratio, test_ratio, random_state)
                 st.success(f"Datasets successfully created at {dataset_dir}")
