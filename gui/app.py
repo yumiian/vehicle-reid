@@ -206,8 +206,8 @@ if task_type == "Data Augmentation":
     with st.sidebar.container(border=True):
         transform_list = []
 
-        image_path = st.text_input("Images Directory Path", value=os.path.join(CROPS_DIR, "crop"), key="augment_images_path")
-        output_path = st.text_input("Output Directory Path", value=os.path.join(CROPS_DIR, "_crop"), key="augment_output_path")
+        image_path = st.text_input("Images Directory Path", value=CROPS_DIR, key="augment_images_path")
+        output_path = st.text_input("Output Directory Path", value=os.path.join(CROPS_DIR, "augmented"), key="augment_output_path")
 
         st.write("Apply augmentation techniques:")
         horflip = st.checkbox("HorizontalFlip", help="Flip the input horizontally around the y-axis.")

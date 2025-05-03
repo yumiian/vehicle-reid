@@ -14,16 +14,22 @@ def get_abbreviation(transform_list):
     ) + "_" if transform_list else ""
 
 def augment(transform_list, seed, image_path, output_path):
+    image_files = []
+
+    for root, _, files in os.walk(image_path):
+        for fname in files:
+            image_files.append(os.path.join(root, fname))
+
     os.makedirs(output_path, exist_ok=True)
 
     progress_text = st.empty()
     progress_bar = st.progress(0)
-    total_files = len(os.listdir(image_path))
+    total_files = len(image_files)
 
     transform = A.Compose(transform_list, seed=seed, strict=True)
     abbr = get_abbreviation(transform_list)
 
-    for i, filename in enumerate(os.listdir(image_path), start=1):
+    for i, filename in enumerate(image_files, start=1):
         if not filename.endswith((".png", ".jpg", ".jpeg")):
             continue
 
@@ -34,7 +40,7 @@ def augment(transform_list, seed, image_path, output_path):
         image = cv2.imread(filepath, cv2.COLOR_BGR2RGB)
         augmented_image = transform(image=image)["image"]
         
-        output_filename = os.path.join(output_path, f"{abbr}{filename}")
+        output_filename = os.path.join(output_path, f"{abbr}{os.path.basename(filename)}")
         cv2.imwrite(output_filename, augmented_image)
 
         progress_bar.progress(i / total_files)
