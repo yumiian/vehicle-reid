@@ -547,7 +547,8 @@ if task_type == "Visualization":
                 fig = visualization.visualize(data_dir=data_dir, query_csv_path=query_csv_path, gallery_csv_path=gallery_csv_path, model_opts=model_opts,
                                                 checkpoint=checkpoint, batchsize=batchsize, input_size=input_size, num_images=num_images, 
                                                 imgs_per_row=imgs_per_row, use_saved_mat=use_saved_mat, curr_idx=curr_idx)
-                st.pyplot(fig)
+                if fig is not None:
+                    st.pyplot(fig)
 
 ########################
 

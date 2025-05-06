@@ -189,30 +189,36 @@ def visualize(data_dir, query_csv_path, gallery_csv_path, model_opts, checkpoint
         with torch.no_grad():
             q_feature = extract_feature(model, X, device).cpu()
 
-    if use_cam:
-        curr_cam = query_df["camera"].iloc[curr_idx]
-        good_gallery_idx = torch.tensor(gallery_df["camera"] != curr_cam).type(torch.bool)
-        gallery_orig_idx = np.where(good_gallery_idx)[0]
-        gal_features = gallery_features[good_gallery_idx]
-    else:
-        gallery_orig_idx = np.arange(len(gallery_df))
-        gal_features = gallery_features
-    gallery_scores = get_scores(q_feature, gal_features)
-    idx = np.argsort(gallery_scores)[::-1]
-    score_labels = gallery_scores[idx]
+    try:
+        if use_cam:
+            curr_cam = query_df["camera"].iloc[curr_idx]
+            good_gallery_idx = torch.tensor(gallery_df["camera"] != curr_cam).type(torch.bool)
+            gallery_orig_idx = np.where(good_gallery_idx)[0]
+            gal_features = gallery_features[good_gallery_idx]
+        else:
+            gallery_orig_idx = np.arange(len(gallery_df))
+            gal_features = gallery_features
+        gallery_scores = get_scores(q_feature, gal_features)
+        idx = np.argsort(gallery_scores)[::-1]
+        score_labels = gallery_scores[idx]
 
-    if use_cam:
-        g_labels = gallery_labels[gallery_orig_idx][idx]
-    else:
-        g_labels = gallery_labels[idx]
+        if use_cam:
+            g_labels = gallery_labels[gallery_orig_idx][idx]
+        else:
+            g_labels = gallery_labels[idx]
 
-    num_images -= 1 # for list slicing
+        num_images -= 1 # for list slicing
     
-    q_img = dataset.get_image(curr_idx)
-    g_imgs = [image_datasets["gallery"].get_image(gallery_orig_idx[i])
-              for i in idx[:num_images]]
-    query_fname = dataset.get_filename(curr_idx)
-    gallery_fname = [image_datasets["gallery"].get_filename(gallery_orig_idx[i]) for i in idx[:num_images]]
-    fig = show_query_result(q_img, g_imgs, y, g_labels, imgs_per_row, score_labels, query_fname, gallery_fname)
+        q_img = dataset.get_image(curr_idx)
+        g_imgs = [image_datasets["gallery"].get_image(gallery_orig_idx[i]) for i in idx[:num_images]]
+        query_fname = dataset.get_filename(curr_idx)
+        gallery_fname = [image_datasets["gallery"].get_filename(gallery_orig_idx[i]) for i in idx[:num_images]]
+        fig = show_query_result(q_img, g_imgs, y, g_labels, imgs_per_row, score_labels, query_fname, gallery_fname)
 
-    return fig
+        return fig
+    except IndexError as e:
+        st.error(f'Corrupted cache file. Try to disable "Use Cache" from Advanced Settings or rerun the "Model Testing" task.')
+        return None
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
+        return None
