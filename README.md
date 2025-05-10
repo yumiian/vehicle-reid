@@ -1,6 +1,14 @@
 # Vehicle Re-identification for Traffic Impact Assessment using Deep Learning
 
-A Streamlit-based application designed for Vehicle Re-Identification (Re-ID) tasks, featuring tasks like dataset preparation, model training, testing, and visualization.
+A Streamlit-based application designed for Vehicle Re-Identification (Re-ID) tasks, featuring tasks like `Data Preparation`, `Image Comparison`, `Data Augmentation`, `Dataset Split`, `Model Training`, `Model Testing` and `Visualization`.
+
+## Screenshots
+
+### Image Comparison
+![compare](https://images2.imgbox.com/96/4a/njnxvpFR_o.png)
+
+### Visualization
+![visualization](https://images2.imgbox.com/70/f9/FHVmFYlX_o.png)
 
 ## Disclaimer
 
@@ -69,7 +77,7 @@ This message may showed up after opening the Streamlit GUI using WSL.
 
 `gio: http://localhost:8501: Operation not supported`
 
-This issue apparently is WSL trying to open WSL browser instead of Windows Browser. You can safely ignore this or run this command:
+Apparently this issue occurs when WSL is trying to open WSL browser instead of Windows Browser. You can safely ignore this or run this command:
 
 ```
 $ sudo apt-get install wslu
