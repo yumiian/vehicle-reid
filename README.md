@@ -2,14 +2,6 @@
 
 A Streamlit-based application designed for Vehicle Re-Identification (Re-ID) tasks, featuring tasks like `Data Preparation`, `Image Comparison`, `Data Augmentation`, `Dataset Split`, `Model Training`, `Model Testing` and `Visualization`.
 
-## Screenshots
-
-### Image Comparison
-![compare](https://images2.imgbox.com/96/4a/njnxvpFR_o.png)
-
-### Visualization
-![visualization](https://images2.imgbox.com/70/f9/FHVmFYlX_o.png)
-
 ## Disclaimer
 
 This code only works in **Linux OS**. If you are using Windows, you can use [**WSL (Windows Subsystem for Linux)**](https://learn.microsoft.com/en-us/windows/wsl/install) to install Ubuntu OS on your Windows.
@@ -71,6 +63,14 @@ $ streamlit run gui/app.py
 ```
 
 Now you can view the application in your browser. By default, the app local URL is at http://localhost:8501/.
+
+## Screenshots
+
+### Image Comparison
+![compare](https://images2.imgbox.com/96/4a/njnxvpFR_o.png)
+
+### Visualization
+![visualization](https://images2.imgbox.com/70/f9/FHVmFYlX_o.png)
 
 ## Troubleshoot
 This message may showed up after opening the Streamlit GUI using WSL. 
