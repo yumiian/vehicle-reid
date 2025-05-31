@@ -32,6 +32,11 @@ sudo apt install python3 python3-pip
 ```
 
 ## Getting Started
+
+There are two methods to install and use the application.
+
+### 1. Local Method
+
 First, clone the repo or download the latest source code from [**releases**](https://github.com/yumiian/vehicle-reid/releases).
 
 Create new virtual environment:
@@ -64,7 +69,7 @@ $ streamlit run gui/app.py
 
 Now you can view the application in your browser. By default, the app local URL is at http://localhost:8501/.
 
-### Docker
+### 2. Docker Method
 
 If you prefer using Docker instead, make sure you have [Docker](https://docs.docker.com/engine/install/#server) installed by running this command:
 ```
