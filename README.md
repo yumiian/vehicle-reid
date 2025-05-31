@@ -64,6 +64,33 @@ $ streamlit run gui/app.py
 
 Now you can view the application in your browser. By default, the app local URL is at http://localhost:8501/.
 
+### Docker
+
+If you prefer using Docker instead, make sure you have [Docker](https://docs.docker.com/engine/install/#server) installed by running this command:
+```
+$ sudo docker run hello-world
+```
+**Note that you have to install PyTorch in your Docker container based on your installed CUDA version.**
+
+An example for installing PyTorch for CUDA version 12.1: 
+
+Edit the `Dockerfile` file by adding this line after line 15:
+```
+RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
+
+Then, build the Docker image for this application:
+```
+$ sudo docker build -t vehicle_reid .
+```
+
+Finally, run the Docker container:
+```
+$ sudo docker run -p 8501:8501 vehicle_reid
+```
+
+Navigate to http://localhost:8501/ using your browser to view the application.
+
 ## Screenshots
 
 ### Image Comparison
